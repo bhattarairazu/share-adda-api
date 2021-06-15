@@ -21,9 +21,8 @@ public class MarketSummary implements Serializable {
     @Id
     private String id;
 
-    @TextIndexed
     private String totalTurnover;
-
+    private String date;
     private String totalTradedShare;
     private String totalTranscations;
     private String totalScriptTraded;

@@ -25,6 +25,7 @@ public class TopTurnOver implements Serializable {
     private String companySymbol;
     private String turnOver;
     private String closingPrice;
+    private String date;
 
 
     @Indexed

@@ -25,6 +25,7 @@ public class TopShareTraded implements Serializable {
     private String companySymbol;
     private String shareTraded;
     private String closingPrice;
+    private String date;
 
 
     @Indexed

@@ -160,17 +160,24 @@ public class ScrappingService {
         List<IndiciesSubindicies> indiciesSubindiciesList = new ArrayList<>();
         String url = "http://www.nepalstock.com";
         Document doc = Jsoup.connect(url).get();
+        String []date = doc.getElementsByClass("col-xs-12 col-md-12 col-sm-12 panel panel-default").get(1).getElementsByClass("panel-heading").text().split(" ");
+        //String newdate = date.substring(5,15);
+        String newDate = date[2];
+        String time = date[3];
+        String allDate = newDate+" " + time;
+        //System.out.println(newDate+" "+time);
+
         List<Element> tables = doc.getElementsByClass("table table-hover table-condensed").stream().skip(4).collect(Collectors.toList());
         for(int i = 0;i<tables.size();i++){
             Elements trow = tables.get(i).select("tr");
             if(i==0) {
                 for (Element tdata : trow.subList(1, 4)) {
-                    indiciesSubindiciesList.add(extractindiciessubindicies(tdata));
+                    indiciesSubindiciesList.add(extractindiciessubindicies(tdata,allDate));
 
                 }
             }else{
                 for (Element tdata : trow.subList(1, 14)) {
-                    indiciesSubindiciesList.add(extractindiciessubindicies(tdata));
+                    indiciesSubindiciesList.add(extractindiciessubindicies(tdata,allDate));
 
                 }
             }
@@ -181,13 +188,24 @@ public class ScrappingService {
 
     }
 
-    private IndiciesSubindicies extractindiciessubindicies(Element tdata) {
+    private IndiciesSubindicies extractindiciessubindicies(Element tdata,String allDate) {
         Elements tdatas = tdata.select("td");
         IndiciesSubindicies indiciesSubindicies = new IndiciesSubindicies();
         indiciesSubindicies.setIndicesName(tdatas.get(0).text());
         indiciesSubindicies.setCurrentPrice(tdatas.get(1).text());
-        indiciesSubindicies.setPointsChange(tdatas.get(2).text());
-        indiciesSubindicies.setPercentChange(tdatas.get(3).text());
+        //getting plus minus sign
+        String[] plusminus = tdatas.get(4).select("img").attr("src").split("/");
+        String pm = plusminus[plusminus.length-1];
+        String sign = null;
+        if(pm.equalsIgnoreCase("decrease.gif")){
+            indiciesSubindicies.setPointsChange("-"+tdatas.get(2).text());
+            indiciesSubindicies.setPercentChange("-"+tdatas.get(3).text());
+        }else{
+            indiciesSubindicies.setPointsChange(tdatas.get(2).text());
+            indiciesSubindicies.setPercentChange(tdatas.get(3).text());
+        }
+        indiciesSubindicies.setDate(allDate);
+
         return indiciesSubindicies;
     }
 
@@ -195,13 +213,19 @@ public class ScrappingService {
         MarketSummary marketSummary = new MarketSummary();
         Map<String,String> newMap = new HashMap<>();
         String url = "http://www.nepalstock.com/";
-        String []headingarr = {"totalTurnover","totalTradedShare","totalTranscations","totalScriptTraded","totalMarketCapitalization","floatedMarketCapitalization"};
+        String []headingarr = {"date","totalTurnover","totalTradedShare","totalTranscations","totalScriptTraded","totalMarketCapitalization","floatedMarketCapitalization"};
         Document table = Jsoup.connect(url).get();
+        String []date = table.getElementsByClass("col-xs-12 col-md-12 col-sm-12 panel panel-default").get(1).getElementsByClass("panel-heading").text().split(" ");
+        //String newdate = date.substring(5,15);
+        String newDate = date[2];
+        String time = date[3];
+        String allDate = newDate+" " + time;
+        newMap.put(headingarr[0],allDate);
         Element element = table.getElementsByClass("table table-hover table-condensed").get(3);
         List<Element> trs = element.select("tr").subList(1,7);
         for(int i = 0;i<trs.size();i++){
             Elements td=trs.get(i).select("td");
-            newMap.put(headingarr[i],td.get(1).text());
+            newMap.put(headingarr[i+1],td.get(1).text());
         }
         ObjectMapper mapper = new ObjectMapper();
         marketSummary = mapper.convertValue(newMap,MarketSummary.class);
@@ -213,6 +237,9 @@ public class ScrappingService {
         String url = "http://www.nepalstock.com/losers";
         Document doc = Jsoup.connect(url).get();
         Elements table = doc.getElementsByClass("dataTable table");
+        String[] date = table.select("tr").get(1).text().split(" ");
+        String newDate = date[2]+" "+date[3];
+        System.out.println("main date "+(date[2]+" "+date[3]));
         List<Element> tr = table.select("tr").stream().skip(2).collect(Collectors.toList());
         //System.out.println(tr);
         for(int i =0;i<tr.size()-1;i++){
@@ -221,7 +248,9 @@ public class ScrappingService {
             topLoosers.setSymbol(tds.get(0).text());
             topLoosers.setLtp(tds.get(1).text());
             topLoosers.setPercnetchange(tds.get(2).text());
+            topLoosers.setDate(newDate);
             topLoosersList.add(topLoosers);
+
             //System.out.println(topLoosersList);
 
         }
@@ -233,6 +262,9 @@ public class ScrappingService {
         String url = "http://www.nepalstock.com/gainers";
         Document doc = Jsoup.connect(url).get();
         Elements table = doc.getElementsByClass("dataTable table");
+        String[] date = table.select("tr").get(1).text().split(" ");
+        String newDate = date[2]+" "+date[3];
+        System.out.println("main date "+(date[2]+" "+date[3]));
         List<Element> tr = table.select("tr").stream().skip(2).collect(Collectors.toList());
         System.out.println(tr);
         for(int i =0;i<tr.size()-1;i++){
@@ -242,6 +274,7 @@ public class ScrappingService {
             topgainers.setSymbol(tds.get(0).text());
             topgainers.setLtp(tds.get(1).text());
             topgainers.setPercnetchange(tds.get(2).text());
+            topgainers.setDate(newDate);
             topgainerslist.add(topgainers);
             //System.out.println(tds.get(0).text());
             //System.out.println(topLoosersList);
@@ -408,7 +441,11 @@ public class ScrappingService {
         List<TopTurnOver> topTurnOvers = new ArrayList<>();
         Document doc = Jsoup.connect(url).get();
         Elements ele = doc.getElementsByClass("dataTable table");
+
         Elements tbody = ele.select("tbody").get(1).select("tr");
+        String[] date = tbody.get(1).text().split(" ");
+        String newDate = date[2]+" "+date[3];
+        System.out.println("main date "+(date[2]+" "+date[3]));
         for(Element td:tbody.subList(2,11)){
             Elements tds = td.select("td");
             System.out.println(tds);
@@ -416,6 +453,7 @@ public class ScrappingService {
             topTurnOver.setCompanySymbol(tds.get(0).text());
             topTurnOver.setTurnOver(tds.get(1).text());
             topTurnOver.setClosingPrice(tds.get(2).text());
+            topTurnOver.setDate(newDate);
             topTurnOvers.add(topTurnOver);
         }
         return topTurnOvers;
@@ -427,6 +465,9 @@ public class ScrappingService {
         Document doc = Jsoup.connect(url).get();
         Elements ele = doc.getElementsByClass("dataTable table");
         Elements tbody = ele.select("tbody").get(3).select("tr");
+        String[] date = tbody.get(1).text().split(" ");
+        String newDate = date[2]+" "+date[3];
+        System.out.println("main date "+(date[2]+" "+date[3]));
         for(Element td:tbody.subList(2,11)){
             Elements tds = td.select("td");
             System.out.println(tds);
@@ -434,6 +475,7 @@ public class ScrappingService {
             topShareTraded.setCompanySymbol(tds.get(0).text());
             topShareTraded.setShareTraded(tds.get(1).text());
             topShareTraded.setClosingPrice(tds.get(2).text());
+            topShareTraded.setDate(newDate);
             topShareTradedList.add(topShareTraded);
         }
         return topShareTradedList;
@@ -446,6 +488,9 @@ public class ScrappingService {
         Document doc = Jsoup.connect(url).get();
         Elements ele = doc.getElementsByClass("dataTable table");
         Elements tbody = ele.select("tbody").get(5).select("tr");
+        String[] date = tbody.get(1).text().split(" ");
+        String newDate = date[2]+" "+date[3];
+        System.out.println("main date "+(date[2]+" "+date[3]));
         for(Element td:tbody.subList(2,11)){
             Elements tds = td.select("td");
             System.out.println(tds);
@@ -453,6 +498,7 @@ public class ScrappingService {
             topTranscations.setCompanySymbol(tds.get(0).text());
             topTranscations.setNoOfTranscations(tds.get(1).text());
             topTranscations.setClosingPrice(tds.get(2).text());
+            topTranscations.setDate(newDate);
             topTranscationsList.add(topTranscations);
         }
         return topTranscationsList;

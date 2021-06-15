@@ -26,6 +26,7 @@ public class TopLoosers implements Serializable {
 
     private String ltp;
     private String percnetchange;
+    private String date;
 
     @Indexed
     @CreatedDate
