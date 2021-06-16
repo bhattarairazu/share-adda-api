@@ -22,7 +22,7 @@ public class TopGainers {
 
     @TextIndexed
     private String symbol;
-    private String date;
+    //private String date;
     private String ltp;
     private String percnetchange;
 

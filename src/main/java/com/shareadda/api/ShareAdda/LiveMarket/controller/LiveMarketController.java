@@ -2,6 +2,7 @@ package com.shareadda.api.ShareAdda.LiveMarket.controller;
 
 
 import com.shareadda.api.ShareAdda.LiveMarket.domain.*;
+import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
 import com.shareadda.api.ShareAdda.LiveMarket.service.ScrappingService;
 import org.json.simple.JSONArray;
@@ -43,14 +44,14 @@ public class LiveMarketController {
     }
 
     @GetMapping("/floorsheet/{stockSymbol}")
-    public ResponseEntity<List<FloorSheet>> getFloorSheet(@PathVariable String stockSymbol) throws IOException {
+    public ResponseEntity<FloorSheetDto> getFloorSheet(@PathVariable String stockSymbol) throws IOException {
         if (stockSymbol.equalsIgnoreCase("all"))
                 stockSymbol = null;
         return new ResponseEntity<>(scrappingService.getFloorSheet(stockSymbol), HttpStatus.OK);
     }
 
     @GetMapping("/indicies-subindicies")
-    public ResponseEntity<List<IndiciesSubindicies>> getIndiciesSubindicies() throws IOException {
+    public ResponseEntity<IndiciesSubIndiciesDto> getIndiciesSubindicies() throws IOException {
         return new ResponseEntity<>(scrappingService.indiciesSubindicies(), HttpStatus.OK);
     }
 
@@ -60,12 +61,12 @@ public class LiveMarketController {
     }
 
     @GetMapping("/get-top-loosers")
-    public ResponseEntity<List<TopLoosers>> getTopLoosers() throws IOException{
+    public ResponseEntity<TopLoosersDto> getTopLoosers() throws IOException{
         return new ResponseEntity<>(scrappingService.getTopLoosers(), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-gainers")
-    public ResponseEntity<List<TopGainers>> getTopGainers() throws IOException{
+    public ResponseEntity<TopGainersDto> getTopGainers() throws IOException{
         return new ResponseEntity<>(scrappingService.getTopGainer(), HttpStatus.OK);
 
     }
@@ -91,17 +92,17 @@ public class LiveMarketController {
     }
 
     @GetMapping("/get-top-turnover")
-    public ResponseEntity<List<TopTurnOver>> getTopTurnOver() throws IOException{
+    public ResponseEntity<TopTurnoverDto> getTopTurnOver() throws IOException{
         return new ResponseEntity<>(scrappingService.getTopTurnOver(), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-sharetraded")
-    public ResponseEntity<List<TopShareTraded>> getTopShareTraded() throws IOException{
+    public ResponseEntity<TopShareTradedDto> getTopShareTraded() throws IOException{
         return new ResponseEntity<>(scrappingService.getTopShareTraded(), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-transcations")
-    public ResponseEntity<List<TopTranscations>> getTopTranscations() throws IOException{
+    public ResponseEntity<TopTranscationsDto> getTopTranscations() throws IOException{
         return new ResponseEntity<>(scrappingService.getTopTranscations(), HttpStatus.OK);
     }
     /*

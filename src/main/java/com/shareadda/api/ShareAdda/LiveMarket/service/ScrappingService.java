@@ -2,6 +2,7 @@ package com.shareadda.api.ShareAdda.LiveMarket.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.*;
+import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -96,7 +97,7 @@ public class ScrappingService {
     }
 
 
-    public List<FloorSheet> getFloorSheet(String stocksymbol) throws IOException{
+    public FloorSheetDto getFloorSheet(String stocksymbol) throws IOException{
         String url = null;
         if(stocksymbol==null) {
             url = "http://www.nepalstock.com/main/floorsheet?_limit=50";
@@ -115,7 +116,7 @@ public class ScrappingService {
         for(Element tr:trs.subList(2,51)){
             Elements tds = tr.select("td");
             FloorSheet floorSheet = new FloorSheet();
-            floorSheet.setDate(newDate);
+            //floorSheet.setDate(newDate);
             floorSheet.setContractNo(tds.get(1).text());
             floorSheet.setStockSymbol(tds.get(2).text());
             floorSheet.setBuyerBroker(tds.get(3).text());
@@ -125,7 +126,10 @@ public class ScrappingService {
             floorSheet.setAmount(tds.get(7).text());
             floorSheetList.add(floorSheet);
         }
-        return floorSheetList;
+        FloorSheetDto floorSheetDto = new FloorSheetDto();
+        floorSheetDto.setDate(newDate);
+        floorSheetDto.setFloorSheetList(floorSheetList);
+        return floorSheetDto;
 
     }
     public List<LiveMarket> scrapeLiveMarket() throws IOException {
@@ -156,7 +160,7 @@ public class ScrappingService {
         return liveMarketList;
     }
 
-    public List<IndiciesSubindicies> indiciesSubindicies() throws IOException {
+    public IndiciesSubIndiciesDto indiciesSubindicies() throws IOException {
         List<IndiciesSubindicies> indiciesSubindiciesList = new ArrayList<>();
         String url = "http://www.nepalstock.com";
         Document doc = Jsoup.connect(url).get();
@@ -183,7 +187,11 @@ public class ScrappingService {
             }
 
         }
-        return indiciesSubindiciesList;
+        IndiciesSubIndiciesDto indiciesSubIndiciesDto = new IndiciesSubIndiciesDto();
+        indiciesSubIndiciesDto.setDate(newDate);
+        indiciesSubIndiciesDto.setIndiciesSubindiciesList(indiciesSubindiciesList);
+
+        return indiciesSubIndiciesDto;
 
 
     }
@@ -204,7 +212,7 @@ public class ScrappingService {
             indiciesSubindicies.setPointsChange(tdatas.get(2).text());
             indiciesSubindicies.setPercentChange(tdatas.get(3).text());
         }
-        indiciesSubindicies.setDate(allDate);
+        //indiciesSubindicies.setDate(allDate);
 
         return indiciesSubindicies;
     }
@@ -232,7 +240,7 @@ public class ScrappingService {
 
         return marketSummary;
     }
-    public List<TopLoosers> getTopLoosers() throws IOException {
+    public TopLoosersDto getTopLoosers() throws IOException {
         List<TopLoosers> topLoosersList = new ArrayList<>();
         String url = "http://www.nepalstock.com/losers";
         Document doc = Jsoup.connect(url).get();
@@ -248,16 +256,19 @@ public class ScrappingService {
             topLoosers.setSymbol(tds.get(0).text());
             topLoosers.setLtp(tds.get(1).text());
             topLoosers.setPercnetchange(tds.get(2).text());
-            topLoosers.setDate(newDate);
+            //topLoosers.setDate(newDate);
             topLoosersList.add(topLoosers);
 
             //System.out.println(topLoosersList);
 
         }
-        return topLoosersList;
+        TopLoosersDto topLoosersDto = new TopLoosersDto();
+        topLoosersDto.setDate(newDate);
+        topLoosersDto.setTopLoosersList(topLoosersList);
+        return topLoosersDto;
 
     }
-    public List<TopGainers> getTopGainer() throws IOException {
+    public TopGainersDto getTopGainer() throws IOException {
         List<TopGainers> topgainerslist = new ArrayList<>();
         String url = "http://www.nepalstock.com/gainers";
         Document doc = Jsoup.connect(url).get();
@@ -274,14 +285,17 @@ public class ScrappingService {
             topgainers.setSymbol(tds.get(0).text());
             topgainers.setLtp(tds.get(1).text());
             topgainers.setPercnetchange(tds.get(2).text());
-            topgainers.setDate(newDate);
+            //topgainers.setDate(newDate);
             topgainerslist.add(topgainers);
             //System.out.println(tds.get(0).text());
             //System.out.println(topLoosersList);
 
 
         }
-        return topgainerslist;
+        TopGainersDto topGainersDto = new TopGainersDto();
+        topGainersDto.setDate(newDate);
+        topGainersDto.setTopGainersList(topgainerslist);
+        return topGainersDto;
 
     }
     public List<Brokers> getAllBrokers() throws IOException {
@@ -436,7 +450,7 @@ public class ScrappingService {
         return companyAndSymbolRepository.saveAll(companyWithSymbolNumberList);
 
     }
-    public List<TopTurnOver> getTopTurnOver() throws IOException {
+    public TopTurnoverDto getTopTurnOver() throws IOException {
         String url = "http://www.nepalstock.com/turnovers";
         List<TopTurnOver> topTurnOvers = new ArrayList<>();
         Document doc = Jsoup.connect(url).get();
@@ -453,13 +467,16 @@ public class ScrappingService {
             topTurnOver.setCompanySymbol(tds.get(0).text());
             topTurnOver.setTurnOver(tds.get(1).text());
             topTurnOver.setClosingPrice(tds.get(2).text());
-            topTurnOver.setDate(newDate);
+            //topTurnOver.setDate(newDate);
             topTurnOvers.add(topTurnOver);
         }
-        return topTurnOvers;
+        TopTurnoverDto topTurnoverDto = new TopTurnoverDto();
+        topTurnoverDto.setDate(newDate);
+        topTurnoverDto.setTopTurnOverList(topTurnOvers);
+        return topTurnoverDto;
 
     }
-    public List<TopShareTraded> getTopShareTraded() throws IOException {
+    public TopShareTradedDto getTopShareTraded() throws IOException {
         String url = "http://www.nepalstock.com/turnovers";
         List<TopShareTraded> topShareTradedList = new ArrayList<>();
         Document doc = Jsoup.connect(url).get();
@@ -475,14 +492,17 @@ public class ScrappingService {
             topShareTraded.setCompanySymbol(tds.get(0).text());
             topShareTraded.setShareTraded(tds.get(1).text());
             topShareTraded.setClosingPrice(tds.get(2).text());
-            topShareTraded.setDate(newDate);
+            //topShareTraded.setDate(newDate);
             topShareTradedList.add(topShareTraded);
         }
-        return topShareTradedList;
+        TopShareTradedDto topShareTradedDto = new TopShareTradedDto();
+        topShareTradedDto.setDate(newDate);
+        topShareTradedDto.setTopShareTradedList(topShareTradedList);
+        return topShareTradedDto;
 
     }
 
-    public List<TopTranscations> getTopTranscations() throws IOException {
+    public TopTranscationsDto getTopTranscations() throws IOException {
         String url = "http://www.nepalstock.com/turnovers";
         List<TopTranscations> topTranscationsList = new ArrayList<>();
         Document doc = Jsoup.connect(url).get();
@@ -498,10 +518,14 @@ public class ScrappingService {
             topTranscations.setCompanySymbol(tds.get(0).text());
             topTranscations.setNoOfTranscations(tds.get(1).text());
             topTranscations.setClosingPrice(tds.get(2).text());
-            topTranscations.setDate(newDate);
+            //topTranscations.setDate(newDate);
             topTranscationsList.add(topTranscations);
         }
-        return topTranscationsList;
+        TopTranscationsDto topTranscationsDto = new TopTranscationsDto();
+        topTranscationsDto.setDate(newDate);
+        topTranscationsDto.setTopTranscationList(topTranscationsList);
+
+        return topTranscationsDto;
 
     }
 }

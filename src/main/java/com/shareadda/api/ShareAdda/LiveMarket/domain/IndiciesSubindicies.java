@@ -27,7 +27,7 @@ public class IndiciesSubindicies implements Serializable {
     private String currentPrice;
     private String pointsChange;
     private String percentChange;
-    private String date;
+    //private String date;
 
 
     @Indexed

@@ -25,7 +25,7 @@ public class TopTranscations implements Serializable {
     private String companySymbol;
     private String noOfTranscations;
     private String closingPrice;
-    private String date;
+    //private String date;
 
 
     @Indexed

@@ -23,7 +23,7 @@ public class FloorSheet implements Serializable {
 
     @TextIndexed
     private String contractNo;
-    private String date;
+   // private String date;
     @TextIndexed
     private String stockSymbol;
     private String buyerBroker;
