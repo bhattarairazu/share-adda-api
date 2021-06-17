@@ -28,6 +28,7 @@ public class ListedCompanies implements Serializable {
     private String name;
     @TextIndexed
     private String companyType;
+    private String companyNo;
 
     @Indexed
     @CreatedDate

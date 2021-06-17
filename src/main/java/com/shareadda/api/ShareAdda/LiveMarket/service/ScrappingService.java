@@ -1,9 +1,11 @@
 package com.shareadda.api.ShareAdda.LiveMarket.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.*;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.*;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
+import com.shareadda.api.ShareAdda.LiveMarket.repository.ListedCompanyRepository;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,18 +22,20 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class ScrappingService {
     @Autowired
-    CompanyAndSymbol companyAndSymbolRepository;
+    private CompanyAndSymbol companyAndSymbolRepository;
+
+    @Autowired
+    private ListedCompanyRepository listedCompanyRepository;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -332,7 +336,17 @@ public class ScrappingService {
             listedCompanies.setCompanyType(tds.get(4).text());
             listedCompaniesList.add(listedCompanies);
         }
-        return listedCompaniesList;
+        List<CompanyWithSymbolNumber> listcompanysymbolno = getSymbolNumber();
+        for(int j = 0;j<listcompanysymbolno.size();j++){
+            for (int i = 0;i<listedCompaniesList.size();i++){
+                if(listcompanysymbolno.get(j).getSymbol().equalsIgnoreCase(listedCompaniesList.get(i).getCompanyCode())){
+                    listedCompaniesList.get(i).setCompanyNo(listcompanysymbolno.get(j).getNumber());
+                    break;
+                }
+            }
+        }
+
+        return listedCompanyRepository.saveAll(listedCompaniesList);
 
 
     }
@@ -340,29 +354,37 @@ public class ScrappingService {
         CompanyDetails companyDetails = new CompanyDetails();
         String url = "https://merolagani.com/CompanyDetail.aspx?symbol="+symbol;
         Map<String,String> newMap = new HashMap<>();
-        String []companydetailsheading = {"sector","shareOutStanding","marketPrice","percentChange","lastTradedOn","fiftyTwoWeeksHighLow","hunderdTwentyDayAverage","oneYearYield","eps","peRatio","bookValue","pbv","thirtyDayAvgVolume","marketCapitalization","companySymbol","companyName","sector","listedShares","paidupValue","totalPaidupvalue"};
+        String []companydetailsheading = {"sector","shareOutStanding","marketPrice","percentChange","lastTradedOn","fiftyTwoWeeksHighLow","hunderEightyDayAverage","hunderdTwentyDayAverage","oneYearYield","eps","peRatio","bookValue","pbv"};
 
         Document doc = Jsoup.connect(url).get();
         Elements tables = doc.getElementsByClass("table table-striped table-hover table-zeromargin");
         Elements tr = tables.select("tbody").select("tr");
         List<Element> trs = tables.select("tbody").select("tr");
-        System.out.println(trs);
+        System.out.println(trs.size());
         int j = 0;
-        for(int i = 0;i<trs.size();i++){
-            if(i==6 || (i>=13 && i<=34)) continue;
-            Elements td=trs.get(i).select("td");
-            newMap.put(trs.get(i).select("th").get(0).text(),td.get(0).text());
-            System.out.println(newMap);
-            // System.out.println(j);
-            j+=1;
+        for(int i = 0;i<13;i++){
+                Elements td = trs.get(i).select("td");
+                newMap.put(companydetailsheading[i], td.get(0).text());
 
         }
+        String []addedName = {"symbol","companyName","listedShares","paidupValue","totalPaidupvalue"};
+        int k = 0;
+        for(int m = trs.size()-6;m<=trs.size()-1;m++) {
+            if (m == trs.size()-4) continue;
+            Elements td = trs.get(m).select("td");
+            newMap.put(addedName[k], td.get(0).text());
+            k++;
+
+        }
+
+        String companyNo = companyAndSymbolRepository.findBySymbol(newMap.get("symbol")).getNumber();
+        newMap.put("companyNo",companyNo);
         ObjectMapper mapper = new ObjectMapper();
         companyDetails = mapper.convertValue(newMap,CompanyDetails.class);
         // System.out.println(tables);
         return companyDetails;
     }
-    public String getChartData(int no,char type) throws IOException {
+    public Map<String,List<?>> getChartData(int no,char type) throws IOException {
         /*
          *Here M- Represet type which is Month
          * D - Day
@@ -389,12 +411,39 @@ public class ScrappingService {
          */
         String url= "http://www.nepalstock.com/graphdata/"+no+"/"+type;
 
+        //JSONArray ss = restTemplate.getForObject(url, JSONArray.class);
         String ss = restTemplate.getForObject(url, String.class);
-        System.out.println(ss);
-        return ss;
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonParser jp = new JsonParser();
+        JsonArray jsonArray = (JsonArray) jp.parse(ss);
+//        {
+//            time:["2019-11-11 10:00","2019-11-11 10:00"],
+//            data:[3000,4000]
+//        }
+        Map<String,List<?>> chartMap = new HashMap<>();
+        List<String> dates = new ArrayList<>();
+        List<Double> datas = new ArrayList<>();
+        System.out.println(jsonArray.size());
+        for(int i = 0;i<jsonArray.size();i++){
+            JsonArray innerarray = (JsonArray) jp.parse(String.valueOf(jsonArray.get(i)));
+            dates.add(getDate(Long.parseLong(String.valueOf(innerarray.get(0)))));
+            datas.add(Double.parseDouble(String.valueOf(innerarray.get(1))));
+
+        }
+
+        chartMap.put("time", dates);
+        chartMap.put("data", datas);
+        //System.out.println(dates);
+        //System.out.println(datas);
+        return chartMap;
 
     }
-    public String getChartofCompanyData(int no,char type) throws IOException {
+    private String getDate(long time){
+        Timestamp timestamp = new Timestamp(time);
+        Date date = timestamp;
+        return String.valueOf(date);
+    }
+    public Map<String,List<?>> getChartofCompanyData(int no,char type) throws IOException {
         /*
          *Here M- Represet type which is Month
          * D - Day
@@ -422,8 +471,29 @@ public class ScrappingService {
         String url= "http://www.nepalstock.com/company/graphdata/"+no+"/"+type;
 
         String ss = restTemplate.getForObject(url, String.class);
-        System.out.println(ss);
-        return ss;
+        //JSONArray ss = restTemplate.getForObject(url, JSONArray.class);
+        JsonParser jp = new JsonParser();
+        JsonArray jsonArray = (JsonArray) jp.parse(ss);
+//        {
+//            time:["2019-11-11 10:00","2019-11-11 10:00"],
+//            data:[3000,4000]
+//        }
+        Map<String,List<?>> chartMap = new HashMap<>();
+        List<String> dates = new ArrayList<>();
+        List<Double> datas = new ArrayList<>();
+        System.out.println(jsonArray.size());
+        for(int i = 0;i<jsonArray.size();i++){
+            JsonArray innerarray = (JsonArray) jp.parse(String.valueOf(jsonArray.get(i)));
+            dates.add(getDate(Long.parseLong(String.valueOf(innerarray.get(0)))));
+            datas.add(Double.parseDouble(String.valueOf(innerarray.get(1))));
+
+        }
+
+        chartMap.put("time", dates);
+        chartMap.put("data", datas);
+        //System.out.println(dates);
+        //System.out.println(datas);
+        return chartMap;
 
     }
     public List<CompanyWithSymbolNumber> getSymbolNumber() throws IOException {

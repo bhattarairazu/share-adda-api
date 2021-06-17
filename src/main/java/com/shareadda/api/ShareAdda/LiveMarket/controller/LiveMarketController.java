@@ -4,6 +4,7 @@ package com.shareadda.api.ShareAdda.LiveMarket.controller;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.*;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
+import com.shareadda.api.ShareAdda.LiveMarket.repository.ListedCompanyRepository;
 import com.shareadda.api.ShareAdda.LiveMarket.service.ScrappingService;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/scrape-data")
@@ -26,6 +28,9 @@ public class LiveMarketController {
 
     @Autowired
     private ScrappingService scrappingService;
+
+    @Autowired
+    private ListedCompanyRepository listedCompanyRepository;
 
     @GetMapping("/todaysprice")
     public ResponseEntity<List<LiveMarket>> getTodayStockPrice() throws IOException {
@@ -78,16 +83,16 @@ public class LiveMarketController {
 
     @GetMapping("/get-all-companies")
     public ResponseEntity<List<ListedCompanies>> getAllListedCompanies() throws IOException{
-        return new ResponseEntity<>(scrappingService.getAllListedCompanies(), HttpStatus.OK);
+        return new ResponseEntity<>(listedCompanyRepository.findAll(), HttpStatus.OK);
     }
 
     @GetMapping("/chart/market/{no}/{timeduration}/")
-    public ResponseEntity<String> getChartOfMarket(@PathVariable int no, @PathVariable char timeduration) throws IOException{
-        return new ResponseEntity<String>(scrappingService.getChartData(no,timeduration), HttpStatus.OK);
+    public ResponseEntity<Map<String,List<?>>> getChartOfMarket(@PathVariable int no, @PathVariable char timeduration) throws IOException{
+        return new ResponseEntity<>(scrappingService.getChartData(no,timeduration), HttpStatus.OK);
     }
 
     @GetMapping("/chart/market/company/{no}/{timeduration}/")
-    public ResponseEntity<String> getChartOfCompany(@PathVariable int no, @PathVariable char timeduration) throws IOException{
+    public ResponseEntity<Map<String,List<?>>> getChartOfCompany(@PathVariable int no, @PathVariable char timeduration) throws IOException{
         return new ResponseEntity<>(scrappingService.getChartofCompanyData(no,timeduration), HttpStatus.OK);
     }
 
@@ -104,6 +109,11 @@ public class LiveMarketController {
     @GetMapping("/get-top-transcations")
     public ResponseEntity<TopTranscationsDto> getTopTranscations() throws IOException{
         return new ResponseEntity<>(scrappingService.getTopTranscations(), HttpStatus.OK);
+    }
+
+    @GetMapping("/company-details/{no}")
+    public ResponseEntity<CompanyDetails> getCompanyDetails(@PathVariable String no) throws IOException {
+        return new ResponseEntity<>(scrappingService.getCompanyDetails(no),HttpStatus.OK);
     }
     /*
     //scrapping left to do

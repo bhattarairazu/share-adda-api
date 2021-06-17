@@ -22,7 +22,7 @@ public class CompanyDetails implements Serializable {
     private String id;
 
     @TextIndexed
-    private String companySymbol;
+    private String symbol;
     @TextIndexed
     private String companyName;
     private String sector;
@@ -40,8 +40,9 @@ public class CompanyDetails implements Serializable {
     private String peRatio;
     private String bookValue;
     private String pbv;
-    private String thirtyDayAvgVolume;
-    private String marketCapitalization;
+    private String hunderEightyDayAverage;
+    private String companyNo;
+
 
     @Indexed
     @CreatedDate

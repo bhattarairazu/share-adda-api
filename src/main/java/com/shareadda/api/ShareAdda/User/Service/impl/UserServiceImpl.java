@@ -118,6 +118,14 @@ public class UserServiceImpl implements UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateToken(authentication);
         JWTResponseDto jwtResponseDto = new JWTResponseDto();
+        String username = jwtUtils.getUserUsernameFromJwt(jwt);
+        Optional<User> user = userRepository.findByUsername(username);
+        jwtResponseDto.setPhone(user.get().getPhone());
+        jwtResponseDto.setUsername(username);
+        jwtResponseDto.setUseremail(user.get().getEmail());
+        jwtResponseDto.setFullname(user.get().getFirstName()+" "+user.get().getLastName());
+        jwtResponseDto.setUserid(user.get().getId());
+        jwtResponseDto.setRoles(user.get().getRoles());
         jwtResponseDto.setToken(jwt);
         return jwtResponseDto;
     }
