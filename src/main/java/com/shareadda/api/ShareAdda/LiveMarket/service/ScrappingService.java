@@ -48,7 +48,7 @@ public class ScrappingService {
     }
 
     private JSONArray getMeroLagani() {
-        String url = "https://merolagani.com/handlers/webrequesthandler.ashx?type=get_news&newsID=0&newsCategoryID=0&symbol=&page=1&pageSize=100&popular=false&includeFeatured=true&news=%23ctl00_ContentPlaceHolder1_txtNews&languageType=NP";
+        String url = "https://merolagani.com/handlers/webrequesthandler.ashx?type=get_news&newsID=0&newsCategoryID=0&symbol=&page=1&pageSize=200&popular=false&includeFeatured=true&news=%23ctl00_ContentPlaceHolder1_txtNews&languageType=NP";
 
         JSONParser parser = new JSONParser();
         JSONArray arr = null;
@@ -104,7 +104,7 @@ public class ScrappingService {
     public FloorSheetDto getFloorSheet(String stocksymbol) throws IOException{
         String url = null;
         if(stocksymbol==null) {
-            url = "http://www.nepalstock.com/main/floorsheet?_limit=50";
+            url = "http://www.nepalstock.com/main/floorsheet?_limit=5000";
         }else{
             url = "http://www.nepalstock.com/main/floorsheet?_limit=5000&stock-symbol=" + stocksymbol;
         }
@@ -113,7 +113,7 @@ public class ScrappingService {
         Elements ele = doc.getElementsByClass("table my-table");
         String []date = doc.getElementsByClass("col-xs-2 col-md-2 col-sm-0").get(0).text().split(" ");
         //String newdate = date.substring(5,15);
-        String newDate = date[2];
+        String newDate = date[2]+" "+date[3];
         System.out.println(newDate);
 
         Elements trs = ele.select("tr");
@@ -122,7 +122,7 @@ public class ScrappingService {
             FloorSheet floorSheet = new FloorSheet();
             //floorSheet.setDate(newDate);
             floorSheet.setContractNo(tds.get(1).text());
-            floorSheet.setStockSymbol(tds.get(2).text());
+            floorSheet.setSymbol(tds.get(2).text());
             floorSheet.setBuyerBroker(tds.get(3).text());
             floorSheet.setSellarBroker(tds.get(4).text());
             floorSheet.setQuantity(tds.get(5).text());
@@ -132,7 +132,7 @@ public class ScrappingService {
         }
         FloorSheetDto floorSheetDto = new FloorSheetDto();
         floorSheetDto.setDate(newDate);
-        floorSheetDto.setFloorSheetList(floorSheetList);
+        floorSheetDto.setResults(floorSheetList);
         return floorSheetDto;
 
     }
@@ -173,6 +173,7 @@ public class ScrappingService {
         String newDate = date[2];
         String time = date[3];
         String allDate = newDate+" " + time;
+        System.out.println(allDate);
         //System.out.println(newDate+" "+time);
 
         List<Element> tables = doc.getElementsByClass("table table-hover table-condensed").stream().skip(4).collect(Collectors.toList());
@@ -192,8 +193,8 @@ public class ScrappingService {
 
         }
         IndiciesSubIndiciesDto indiciesSubIndiciesDto = new IndiciesSubIndiciesDto();
-        indiciesSubIndiciesDto.setDate(newDate);
-        indiciesSubIndiciesDto.setIndiciesSubindiciesList(indiciesSubindiciesList);
+        indiciesSubIndiciesDto.setDate(allDate);
+        indiciesSubIndiciesDto.setResults(indiciesSubindiciesList);
 
         return indiciesSubIndiciesDto;
 
@@ -268,7 +269,7 @@ public class ScrappingService {
         }
         TopLoosersDto topLoosersDto = new TopLoosersDto();
         topLoosersDto.setDate(newDate);
-        topLoosersDto.setTopLoosersList(topLoosersList);
+        topLoosersDto.setResults(topLoosersList);
         return topLoosersDto;
 
     }
@@ -298,7 +299,7 @@ public class ScrappingService {
         }
         TopGainersDto topGainersDto = new TopGainersDto();
         topGainersDto.setDate(newDate);
-        topGainersDto.setTopGainersList(topgainerslist);
+        topGainersDto.setResults(topgainerslist);
         return topGainersDto;
 
     }
@@ -331,7 +332,7 @@ public class ScrappingService {
         for(int i = 0;i<trs.size()-1;i++){
             Elements tds = trs.get(i).select("td");
             ListedCompanies listedCompanies = new ListedCompanies();
-            listedCompanies.setCompanyCode(tds.get(3).text());
+            listedCompanies.setSymbol(tds.get(3).text());
             listedCompanies.setName(tds.get(2).text());
             listedCompanies.setCompanyType(tds.get(4).text());
             listedCompaniesList.add(listedCompanies);
@@ -339,7 +340,7 @@ public class ScrappingService {
         List<CompanyWithSymbolNumber> listcompanysymbolno = getSymbolNumber();
         for(int j = 0;j<listcompanysymbolno.size();j++){
             for (int i = 0;i<listedCompaniesList.size();i++){
-                if(listcompanysymbolno.get(j).getSymbol().equalsIgnoreCase(listedCompaniesList.get(i).getCompanyCode())){
+                if(listcompanysymbolno.get(j).getSymbol().equalsIgnoreCase(listedCompaniesList.get(i).getSymbol())){
                     listedCompaniesList.get(i).setCompanyNo(listcompanysymbolno.get(j).getNumber());
                     break;
                 }
@@ -534,7 +535,7 @@ public class ScrappingService {
             Elements tds = td.select("td");
             System.out.println(tds);
             TopTurnOver topTurnOver = new TopTurnOver();
-            topTurnOver.setCompanySymbol(tds.get(0).text());
+            topTurnOver.setSymbol(tds.get(0).text());
             topTurnOver.setTurnOver(tds.get(1).text());
             topTurnOver.setClosingPrice(tds.get(2).text());
             //topTurnOver.setDate(newDate);
@@ -542,7 +543,7 @@ public class ScrappingService {
         }
         TopTurnoverDto topTurnoverDto = new TopTurnoverDto();
         topTurnoverDto.setDate(newDate);
-        topTurnoverDto.setTopTurnOverList(topTurnOvers);
+        topTurnoverDto.setResults(topTurnOvers);
         return topTurnoverDto;
 
     }
@@ -559,7 +560,7 @@ public class ScrappingService {
             Elements tds = td.select("td");
             System.out.println(tds);
             TopShareTraded topShareTraded = new TopShareTraded();
-            topShareTraded.setCompanySymbol(tds.get(0).text());
+            topShareTraded.setSymbol(tds.get(0).text());
             topShareTraded.setShareTraded(tds.get(1).text());
             topShareTraded.setClosingPrice(tds.get(2).text());
             //topShareTraded.setDate(newDate);
@@ -567,7 +568,7 @@ public class ScrappingService {
         }
         TopShareTradedDto topShareTradedDto = new TopShareTradedDto();
         topShareTradedDto.setDate(newDate);
-        topShareTradedDto.setTopShareTradedList(topShareTradedList);
+        topShareTradedDto.setResults(topShareTradedList);
         return topShareTradedDto;
 
     }
@@ -585,7 +586,7 @@ public class ScrappingService {
             Elements tds = td.select("td");
             System.out.println(tds);
             TopTranscations topTranscations = new TopTranscations();
-            topTranscations.setCompanySymbol(tds.get(0).text());
+            topTranscations.setSymbol(tds.get(0).text());
             topTranscations.setNoOfTranscations(tds.get(1).text());
             topTranscations.setClosingPrice(tds.get(2).text());
             //topTranscations.setDate(newDate);
@@ -593,7 +594,7 @@ public class ScrappingService {
         }
         TopTranscationsDto topTranscationsDto = new TopTranscationsDto();
         topTranscationsDto.setDate(newDate);
-        topTranscationsDto.setTopTranscationList(topTranscationsList);
+        topTranscationsDto.setResults(topTranscationsList);
 
         return topTranscationsDto;
 

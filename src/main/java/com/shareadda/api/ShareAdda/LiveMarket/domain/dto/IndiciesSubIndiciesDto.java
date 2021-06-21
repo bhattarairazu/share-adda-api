@@ -15,5 +15,5 @@ import java.util.List;
 @NoArgsConstructor
 public class IndiciesSubIndiciesDto {
     private String date;
-    private List<IndiciesSubindicies> indiciesSubindiciesList = new ArrayList<>();
+    private List<IndiciesSubindicies> results = new ArrayList<>();
 }

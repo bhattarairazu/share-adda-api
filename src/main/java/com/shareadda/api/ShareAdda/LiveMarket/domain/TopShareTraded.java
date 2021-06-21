@@ -22,7 +22,7 @@ public class TopShareTraded implements Serializable {
     private String id;
 
     @TextIndexed
-    private String companySymbol;
+    private String symbol;
     private String shareTraded;
     private String closingPrice;
     //private String date;

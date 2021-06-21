@@ -15,6 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 public class TopLoosersDto {
     private String date;
-    private List<TopLoosers> topLoosersList = new ArrayList<>();
+    private List<TopLoosers> results = new ArrayList<>();
 
 }

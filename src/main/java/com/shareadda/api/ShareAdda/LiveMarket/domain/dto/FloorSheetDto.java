@@ -15,6 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 public class FloorSheetDto {
     private String date;
-    private List<FloorSheet> floorSheetList = new ArrayList<>();
+    private List<FloorSheet> results = new ArrayList<>();
 
 }

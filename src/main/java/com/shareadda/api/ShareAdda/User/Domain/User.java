@@ -62,4 +62,5 @@ public class User extends Auditing implements Serializable {
     private Boolean firstLogin = true;
 
     private String image;
+    private String loginType;
 }

@@ -73,7 +73,11 @@ public class UserServiceImpl implements UserService {
         user.setUsername(signupRequest.getUsername());
         user.setFirstName(signupRequest.getFirstName());
         user.setLastName(signupRequest.getLastName());
-        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        if (signupRequest.getLogintype().equals("SOCIAL")){
+            user.setPassword("");
+        }else {
+            user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        }
         user.setPhone(signupRequest.getPhone());
         user.setRoles(roles);
 

@@ -16,6 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 public class TopTurnoverDto {
     private String date;
-    private List<TopTurnOver> topTurnOverList = new ArrayList<>();
+    private List<TopTurnOver> results = new ArrayList<>();
 
 }

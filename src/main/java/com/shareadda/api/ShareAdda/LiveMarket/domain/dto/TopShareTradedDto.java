@@ -16,6 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 public class TopShareTradedDto {
     private String date;
-    private List<TopShareTraded> topShareTradedList = new ArrayList<>();
+    private List<TopShareTraded> results = new ArrayList<>();
 
 }

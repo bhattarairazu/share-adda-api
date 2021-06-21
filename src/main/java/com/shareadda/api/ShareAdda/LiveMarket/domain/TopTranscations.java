@@ -22,7 +22,7 @@ public class TopTranscations implements Serializable {
     private String id;
 
     @TextIndexed
-    private String companySymbol;
+    private String symbol;
     private String noOfTranscations;
     private String closingPrice;
     //private String date;

@@ -22,7 +22,7 @@ public class ListedCompanies implements Serializable {
     private String id;
 
     @TextIndexed
-    private String companyCode;
+    private String symbol;
 
     @TextIndexed
     private String name;

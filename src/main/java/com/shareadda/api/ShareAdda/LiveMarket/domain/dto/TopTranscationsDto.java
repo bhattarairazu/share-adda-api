@@ -16,6 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 public class TopTranscationsDto {
     private String date;
-    private List<TopTranscations> topTranscationList = new ArrayList<>();
+    private List<TopTranscations> results = new ArrayList<>();
 
 }

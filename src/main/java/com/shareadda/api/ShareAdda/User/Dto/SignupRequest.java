@@ -36,5 +36,6 @@ public class SignupRequest {
 
     @DBRef
     private Set<String> roles;
+    private String logintype;
 
 }
