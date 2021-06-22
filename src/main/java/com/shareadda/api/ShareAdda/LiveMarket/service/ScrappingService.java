@@ -103,10 +103,12 @@ public class ScrappingService {
 
     public FloorSheetDto getFloorSheet(String stocksymbol) throws IOException{
         String url = null;
+        String totalData = null;
         if(stocksymbol==null) {
             url = "http://www.nepalstock.com/main/floorsheet?_limit=5000";
         }else{
-            url = "http://www.nepalstock.com/main/floorsheet?_limit=5000&stock-symbol=" + stocksymbol;
+            totalData = getTotalData(stocksymbol);
+            url = "http://www.nepalstock.com/main/floorsheet?_limit="+totalData+"&stock-symbol=" + stocksymbol;
         }
         List<FloorSheet> floorSheetList = new ArrayList<>();
         Document doc = Jsoup.connect(url).get();
@@ -117,7 +119,7 @@ public class ScrappingService {
         System.out.println(newDate);
 
         Elements trs = ele.select("tr");
-        for(Element tr:trs.subList(2,5001)){
+        for(Element tr:trs.subList(2,Integer.parseInt(totalData)-4)){
             Elements tds = tr.select("td");
             FloorSheet floorSheet = new FloorSheet();
             //floorSheet.setDate(newDate);
@@ -135,6 +137,20 @@ public class ScrappingService {
         floorSheetDto.setResults(floorSheetList);
         return floorSheetDto;
 
+    }
+    private String getTotalData(String stocksymbol){
+        String url = "http://www.nepalstock.com/main/floorsheet?_limit=1&stock-symbol=" + stocksymbol;
+        Document doc = null;
+        try {
+            doc = Jsoup.connect(url).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Elements ele = doc.getElementsByClass("table my-table");
+        Elements trs = ele.select("tr");
+        String[] tabledata = trs.get(trs.size()-3).select("div").select("a").text().split(" ");
+        String totalData = tabledata[1].split("/")[1];
+        return totalData;
     }
     public LiveMarketDto scrapeLiveMarket() throws IOException {
         List<LiveMarket> liveMarketList = new ArrayList<>();
