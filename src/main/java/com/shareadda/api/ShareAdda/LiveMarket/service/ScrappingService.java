@@ -117,7 +117,7 @@ public class ScrappingService {
         System.out.println(newDate);
 
         Elements trs = ele.select("tr");
-        for(Element tr:trs.subList(2,51)){
+        for(Element tr:trs.subList(2,5001)){
             Elements tds = tr.select("td");
             FloorSheet floorSheet = new FloorSheet();
             //floorSheet.setDate(newDate);
