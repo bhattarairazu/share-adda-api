@@ -104,10 +104,13 @@ public class ScrappingService {
     public FloorSheetDto getFloorSheet(String stocksymbol) throws IOException{
         String url = null;
         String totalData = null;
+        int total = 0;
         if(stocksymbol==null) {
             url = "http://www.nepalstock.com/main/floorsheet?_limit=5000";
+            total = 5001;
         }else{
             totalData = getTotalData(stocksymbol);
+            total = Integer.parseInt(totalData)-4;
             url = "http://www.nepalstock.com/main/floorsheet?_limit="+totalData+"&stock-symbol=" + stocksymbol;
         }
         List<FloorSheet> floorSheetList = new ArrayList<>();
@@ -119,7 +122,8 @@ public class ScrappingService {
         System.out.println(newDate);
 
         Elements trs = ele.select("tr");
-        for(Element tr:trs.subList(2,Integer.parseInt(totalData)-4)){
+
+        for(Element tr:trs.subList(2,total)){
             Elements tds = tr.select("td");
             FloorSheet floorSheet = new FloorSheet();
             //floorSheet.setDate(newDate);
