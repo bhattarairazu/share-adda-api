@@ -626,4 +626,67 @@ public class ScrappingService {
         return topTranscationsDto;
 
     }
+    public MarketDepthDto getMarketDepth(String symbol) throws IOException {
+        String no = companyAndSymbolRepository.findBySymbol(symbol.toUpperCase()).getNumber();
+        List<MarketDepth> marketDepths = new ArrayList<>();
+        String url = "http://www.nepalstock.com/marketdepthofcompany/"+no;
+        Document doc = Jsoup.connect(url).get();
+        Elements tableorders = doc.getElementsByClass("table table-striped table-bordered orderTable");
+        Elements buytrs = tableorders.get(0).select("tr");
+        Elements selltrs = tableorders.get(1).select("tr");
+        //System.out.println(trs);
+        for(int i = 1;i<buytrs.size();i++){
+            MarketDepth marketDepth = new MarketDepth();
+            Elements buytd = buytrs.get(i).select("td");
+            marketDepth.setBuyorders(buytd.get(0).text());
+            marketDepth.setBuyqty(buytd.get(1).text());
+            marketDepth.setBuyprice(buytd.get(2).text());
+
+            Elements selltd = selltrs.get(i).select("td");
+            marketDepth.setSellprice(selltd.get(0).text());
+            marketDepth.setSellqty(selltd.get(1).text());
+            marketDepth.setSellorders(selltd.get(2).text());
+            marketDepths.add(marketDepth);
+
+
+        }
+        Element depthindex = doc.getElementsByClass("depthIndex").get(0);
+        Element trs = depthindex.select("tr").get(0);
+        Elements tds = trs.select("td");
+        //for(int i = 0;i<tds.size();i++){
+            MarketDepthDto marketDepthDto = new MarketDepthDto();
+            marketDepthDto.setLtp(tds.get(0).select("label").text());
+            Elements spans = tds.get(0).select("span");
+            String[] priceandpercent = spans.get(1).text().split(" ");
+            marketDepthDto.setPercentchange(priceandpercent[1]);
+            //for price change need to remove &nbsp;&nbsp;
+            String[] pricearry = priceandpercent[0].split("&nbsp;&nbsp;");
+            //getting indicitator name if it is positive or negative
+            if(priceandpercent[1].contains("-")){
+                marketDepthDto.setPointschange("-"+pricearry[0]);
+            }else{
+                marketDepthDto.setPointschange(pricearry[0]);
+            }
+            marketDepthDto.setPreviousclose(tds.get(1).text().split(" ")[2]);
+            marketDepthDto.setOpen(tds.get(2).text().split(" ")[1]);
+            marketDepthDto.setHigh(tds.get(3).text().split(" ")[1]);
+            marketDepthDto.setLow(tds.get(4).text().split(" ")[1]);
+            marketDepthDto.setClose(tds.get(5).text().trim().split(" ")[1]);
+
+           //for total quantity
+            Element table = tableorders.get(2).select("tr").get(0);
+            Elements tds_qnt = table.select("td");
+            marketDepthDto.setBuytotalqnt(tds_qnt.get(1).text());
+            marketDepthDto.setSelltotalqnt(tds_qnt.get(3).text());
+            //getting date
+            String[] dates = doc.getElementsByClass("col-xs-2 col-md-2 col-sm-0").get(0).text().split(" ");
+            //System.out.println("date "+dates[2]+" "+dates[3].trim());
+            marketDepthDto.setDate(dates[2]+" "+dates[3].trim());
+            marketDepthDto.setResults(marketDepths);
+
+            //System.out.println(spans.get(0).className());
+        //}
+        return marketDepthDto;
+    }
+
 }

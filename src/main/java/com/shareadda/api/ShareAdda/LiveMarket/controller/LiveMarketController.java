@@ -115,6 +115,11 @@ public class LiveMarketController {
     public ResponseEntity<CompanyDetails> getCompanyDetails(@PathVariable String no) throws IOException {
         return new ResponseEntity<>(scrappingService.getCompanyDetails(no),HttpStatus.OK);
     }
+
+    @GetMapping("/market-depth/{symbol}")
+    public ResponseEntity<MarketDepthDto> getMarketDepth(@PathVariable String symbol) throws IOException {
+        return new ResponseEntity<>(scrappingService.getMarketDepth(symbol),HttpStatus.OK);
+    }
     /*
     //scrapping left to do
     TODO:Scrapping of news websie of nepalipaisa,sharesansar,bizmandu
