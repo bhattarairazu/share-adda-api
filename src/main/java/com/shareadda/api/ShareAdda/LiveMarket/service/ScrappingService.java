@@ -136,32 +136,59 @@ public class ScrappingService {
         return floorSheetDto;
 
     }
-    public List<LiveMarket> scrapeLiveMarket() throws IOException {
+    public LiveMarketDto scrapeLiveMarket() throws IOException {
         List<LiveMarket> liveMarketList = new ArrayList<>();
-        String url = "http://www.nepalstock.com/todaysprice?_limit=500";
+        String url = "http://www.nepalstock.com/stocklive";
         Document doc = Jsoup.connect(url).get();
-        Element table = doc.getElementsByClass("table table-condensed table-hover").get(0);
+        Element table = doc.getElementsByClass("table table-condensed").get(0);
+        Element datecol = doc.getElementsByClass("col-xs-12 col-md-6 col-sm-6 panel panel-default").get(0);
+        String[] getindiv = datecol.getElementsByClass("panel-heading").text().split(" ");
+        String newDate = getindiv[2]+" "+getindiv[3];
         Elements rows = table.select("tr");
-        Map<String, Element> innerMap = null;
-        for(Element rr : rows.subList(2,220)){
+        for(int i = 1;i<rows.size();i++){
+            Elements tds = rows.get(i).select("td");
             LiveMarket liveMarket = new LiveMarket();
-
-            Elements tds = rr.select("td");
-            //outerMap.put(tds.get(0))
-            liveMarket.setCompanyName(tds.get(1).text());
-            liveMarket.setNoOfTransactions(tds.get(2).text());
-            liveMarket.setMaxPrice(tds.get(3).text());
-            liveMarket.setMinPrice(tds.get(4).text());
-            liveMarket.setClosePrice(tds.get(5).text());
-            liveMarket.setTradedShare(tds.get(6).text());
-            liveMarket.setAmount(tds.get(7).text());
-            liveMarket.setPreviousClosing(tds.get(8).text());
-            liveMarket.setDifference(tds.get(9).text());
+            liveMarket.setSymbol(tds.get(1).text());
+            liveMarket.setLtp(tds.get(2).text());
+            liveMarket.setLtv(tds.get(3).text());
+            liveMarket.setPointchange(tds.get(4).text());
+            liveMarket.setPercentchange(tds.get(5).text());
+            liveMarket.setOpen(tds.get(6).text());
+            liveMarket.setHigh(tds.get(7).text());
+            liveMarket.setLow(tds.get(8).text());
+            liveMarket.setVolume(tds.get(9).text());
+            liveMarket.setPreviousclosing(tds.get(10).text());
             liveMarketList.add(liveMarket);
-
         }
+        LiveMarketDto liveMarketDto = new LiveMarketDto();
+        liveMarketDto.setDate(newDate);
+        liveMarketDto.setResults(liveMarketList);
 
-        return liveMarketList;
+        //String url = "http://www.nepalstock.com/todaysprice?_limit=500";
+//        Document doc = Jsoup.connect(url).get();
+//        Element table = doc.getElementsByClass("table table-condensed table-hover").get(0);
+//        Elements rows = table.select("tr");
+//        Map<String, Element> innerMap = null;
+//        for(Element rr : rows.subList(2,220)){
+//            LiveMarket liveMarket = new LiveMarket();
+//
+//            Elements tds = rr.select("td");
+//            //outerMap.put(tds.get(0))
+//            liveMarket.setCompanyName(tds.get(1).text());
+//            liveMarket.setNoOfTransactions(tds.get(2).text());
+//            liveMarket.setMaxPrice(tds.get(3).text());
+//            liveMarket.setMinPrice(tds.get(4).text());
+//            liveMarket.setClosePrice(tds.get(5).text());
+//            liveMarket.setTradedShare(tds.get(6).text());
+//            liveMarket.setAmount(tds.get(7).text());
+//            liveMarket.setPreviousClosing(tds.get(8).text());
+//            liveMarket.setDifference(tds.get(9).text());
+//            liveMarketList.add(liveMarket);
+//
+//        }
+
+
+        return liveMarketDto;
     }
 
     public IndiciesSubIndiciesDto indiciesSubindicies() throws IOException {

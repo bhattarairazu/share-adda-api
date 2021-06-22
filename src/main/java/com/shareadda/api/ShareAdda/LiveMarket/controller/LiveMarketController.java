@@ -33,7 +33,7 @@ public class LiveMarketController {
     private ListedCompanyRepository listedCompanyRepository;
 
     @GetMapping("/todaysprice")
-    public ResponseEntity<List<LiveMarket>> getTodayStockPrice() throws IOException {
+    public ResponseEntity<LiveMarketDto> getTodayStockPrice() throws IOException {
         return new ResponseEntity<>(scrappingService.scrapeLiveMarket(), HttpStatus.OK);
 
     }

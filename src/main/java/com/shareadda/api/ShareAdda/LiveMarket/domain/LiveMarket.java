@@ -24,16 +24,17 @@ public class LiveMarket implements Serializable {
     private String id;
 
     @TextIndexed
-    private String companyName;
+    private String symbol;
 
-    private String noOfTransactions;
-    private String maxPrice;
-    private String minPrice;
-    private String closePrice;
-    private String tradedShare;
-    private String amount;
-    private String previousClosing;
-    private String difference;
+    private String ltp;
+    private String ltv;
+    private String pointchange;
+    private String percentchange;
+    private String open;
+    private String high;
+    private String low;
+    private String volume;
+    private String previousclosing;
 
     @Indexed
     @CreatedDate
