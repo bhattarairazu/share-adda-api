@@ -6,6 +6,7 @@ import com.shareadda.api.ShareAdda.LiveMarket.domain.*;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.ListedCompanyRepository;
+import com.shareadda.api.ShareAdda.Utils.ThisLocalizedWeek;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,6 +16,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,8 +30,15 @@ import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Calendar.MONDAY;
+import static java.util.Calendar.SUNDAY;
 
 @Service
 public class ScrappingService {
@@ -432,6 +443,90 @@ public class ScrappingService {
         // System.out.println(tables);
         return companyDetails;
     }
+    public Map<String,List<?>> getChartDataNewWeb(int no,char type) throws IOException, java.text.ParseException {
+        /*
+         *Here M- Represet type which is Month
+         * D - Day
+         * Q - Quarter
+         * W- week
+         * Y - Year
+         *
+         * 58- Nepse
+         * 57 -Sensitive
+         * 62 - Float
+         * 63 - Sensitive Float
+         * 51 - Banking
+         * 52 - Hotel
+         * 54-Hydropower
+         * 55- Development Bank
+         * 56 - Manufacture and processing
+         * 64 - Microfinance
+         * 65 - Life Insurance
+         * 59 - Non life Insurance
+         * 60- finance
+         * 61- Trading
+         * 53- Others
+         * 66 - Mutual Fund
+         */
+        String url = null;
+        switch (type){
+            case 'W':
+                  url = "https://newweb.nepalstock.com/api/nots/graph/index?indexCode="+no+"&startDate="+LocalDate.now().minusWeeks(1)+"&endDate="+LocalDate.now();
+               break;
+            case 'D':
+                url= "https://newweb.nepalstock.com/api/nots/graph/index/"+no;
+                break;
+            case 'M':
+                url = "https://newweb.nepalstock.com/api/nots/graph/index?indexCode="+no+"&startDate="+LocalDate.now().minusMonths(1)+"&endDate="+LocalDate.now();
+
+                break;
+            case 'Q':
+                url = "https://newweb.nepalstock.com/api/nots/graph/index?indexCode="+no+"&startDate="+LocalDate.now().minusMonths(3)+"&endDate="+LocalDate.now();
+
+                break;
+            case 'Y':
+                url = "https://newweb.nepalstock.com/api/nots/graph/index?indexCode="+no+"&startDate="+LocalDate.now().minusYears(1)+"&endDate="+LocalDate.now();
+
+                break;
+            default:
+                break;
+        }
+
+
+        //JSONArray ss = restTemplate.getForObject(url, JSONArray.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        JSONObject jsobobject = new JSONObject();
+        jsobobject.put("id",234);
+        HttpEntity<String> request = new HttpEntity<String>(jsobobject.toString(),headers);
+
+        String ss = restTemplate.postForObject(url, request,String.class);
+        System.out.println(url);
+        System.out.println("this is chart"+ss);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonParser jp = new JsonParser();
+        JsonArray jsonArray = (JsonArray) jp.parse(ss);
+//        {
+//            time:["2019-11-11 10:00","2019-11-11 10:00"],
+//            data:[3000,4000]
+//        }
+        Map<String,List<?>> chartMap = new HashMap<>();
+        List<String> dates = new ArrayList<>();
+        List<Double> datas = new ArrayList<>();
+        System.out.println(jsonArray.size());
+        for(int i = 0;i<jsonArray.size();i++){
+            JsonArray innerarray = (JsonArray) jp.parse(String.valueOf(jsonArray.get(i)));
+            dates.add(getDate(Long.parseLong(String.valueOf(innerarray.get(0)))));
+            datas.add(Double.parseDouble(String.valueOf(innerarray.get(1))));
+
+        }
+
+        chartMap.put("time", dates);
+        chartMap.put("data", datas);
+        //System.out.println(dates);
+        //System.out.println(datas);
+        return chartMap;
+    }
     public Map<String,List<?>> getChartData(int no,char type) throws IOException {
         /*
          *Here M- Represet type which is Month
@@ -487,10 +582,17 @@ public class ScrappingService {
 
     }
     private String getDate(long time){
-        Timestamp timestamp = new Timestamp(time);
+        Timestamp timestamp = new Timestamp(time*1000);
         Date date = timestamp;
+        System.out.println("date "+date);
         return String.valueOf(date);
     }
+//    private String getDateForCompany(long time){
+//        Timestamp timestamp = new Timestamp(time);
+//        Date date = timestamp;
+//        //System.out.println("date "+date);
+//        return String.valueOf(date);
+//    }
     public Map<String,List<?>> getChartofCompanyData(int no,char type) throws IOException {
         /*
          *Here M- Represet type which is Month
@@ -535,6 +637,110 @@ public class ScrappingService {
             dates.add(getDate(Long.parseLong(String.valueOf(innerarray.get(0)))));
             datas.add(Double.parseDouble(String.valueOf(innerarray.get(1))));
 
+        }
+
+        chartMap.put("time", dates);
+        chartMap.put("data", datas);
+        //System.out.println(dates);
+        //System.out.println(datas);
+        return chartMap;
+
+    }
+    public Map<String,List<?>> getChartofCompanyDataNewWeb(int no,char type) throws IOException {
+        /*
+         *Here M- Represet type which is Month
+         * D - Day
+         * Q - Quarter
+         * W- week
+         * Y - Year
+         *
+         * 58- Nepse
+         * 57 -Sensitive
+         * 62 - Float
+         * 63 - Sensitive Float
+         * 51 - Banking
+         * 52 - Hotel
+         * 54-Hydropower
+         * 55- Development Bank
+         * 56 - Manufacture and processing
+         * 64 - Microfinance
+         * 65 - Life Insurance
+         * 59 - Non life Insurance
+         * 60- finance
+         * 61- Trading
+         * 53- Others
+         * 66 - Mutual Fund
+         */
+        String url= null;
+        switch (type) {
+            case 'D':
+                url =  "https://newweb.nepalstock.com/api/nots/market/graphdata/daily/"+no;
+                break;
+            case 'W':
+            case 'M':
+            case 'Q':
+            case 'Y':
+                url =  "https://newweb.nepalstock.com/api/nots/market/graphdata/"+no;
+                break;
+        }
+        //JSONArray ss = restTemplate.getForObject(url, JSONArray.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        JSONObject jsobobject = new JSONObject();
+        jsobobject.put("id",234);
+        HttpEntity<String> request = new HttpEntity<String>(jsobobject.toString(),headers);
+
+        JSONArray jsonArray = restTemplate.postForObject(url, request,JSONArray.class);
+
+        //String ss = restTemplate.getForObject(url, String.class);
+        //JSONArray ss = restTemplate.getForObject(url, JSONArray.class);
+        //JsonParser jp = new JsonParser();
+        //JsonArray jsonArray = (JsonArray) jp.parse(ss);
+//        {
+//            time:["2019-11-11 10:00","2019-11-11 10:00"],
+//            data:[3000,4000]
+//        }
+        Map<String,List<?>> chartMap = new HashMap<>();
+        List<String> dates = new ArrayList<>();
+        List<Double> datas = new ArrayList<>();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        if (type=='D') {
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject innerJson = new JSONObject((Map) jsonArray.get(i));
+                dates.add(getDate(Long.parseLong(String.valueOf(innerJson.get("time")))));
+                datas.add(Double.parseDouble(String.valueOf(innerJson.get("contractRate"))));
+
+            }
+        }else if (type=='W'){
+            for (int i = jsonArray.size()-1; i >= jsonArray.size()-7; i--) {
+                JSONObject innerJson = new JSONObject((Map) jsonArray.get(i));
+                dates.add(innerJson.get("businessDate") +" 00:00:00");
+                datas.add(Double.parseDouble(String.valueOf(innerJson.get("lastTradedPrice"))));
+
+            }
+
+
+        }else if(type=='M'){
+            for (int i = jsonArray.size()-1; i >= jsonArray.size()-30; i--) {
+                JSONObject innerJson = new JSONObject((Map) jsonArray.get(i));
+                dates.add(innerJson.get("businessDate") +" 00:00:00");
+                datas.add(Double.parseDouble(String.valueOf(innerJson.get("lastTradedPrice"))));
+
+            }
+        }else if(type=='Q'){
+            for (int i = jsonArray.size()-1; i >= jsonArray.size()-90; i--) {
+                JSONObject innerJson = new JSONObject((Map) jsonArray.get(i));
+                dates.add(innerJson.get("businessDate") +" 00:00:00");
+                datas.add(Double.parseDouble(String.valueOf(innerJson.get("lastTradedPrice"))));
+
+            }
+        }else{
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject innerJson = new JSONObject((Map) jsonArray.get(i));
+                dates.add(innerJson.get("businessDate") +" 00:00:00");
+                datas.add(Double.parseDouble(String.valueOf(innerJson.get("lastTradedPrice"))));
+
+            }
         }
 
         chartMap.put("time", dates);

@@ -80,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/*.html",
                         "/**/*.css",
                         "/api/get/gg",
-                        "/api/**",
+                        //"/api/**",
                         "/**/*.js").permitAll()
                 .antMatchers("/api/v1/user/register","/api/v1/user/auth/login")
                 .permitAll()

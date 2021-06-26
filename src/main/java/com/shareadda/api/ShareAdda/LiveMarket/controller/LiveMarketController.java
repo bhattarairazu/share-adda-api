@@ -87,13 +87,13 @@ public class LiveMarketController {
     }
 
     @GetMapping("/chart/market/{no}/{timeduration}/")
-    public ResponseEntity<Map<String,List<?>>> getChartOfMarket(@PathVariable int no, @PathVariable char timeduration) throws IOException{
-        return new ResponseEntity<>(scrappingService.getChartData(no,timeduration), HttpStatus.OK);
+    public ResponseEntity<Map<String,List<?>>> getChartOfMarket(@PathVariable int no, @PathVariable char timeduration) throws IOException, java.text.ParseException {
+        return new ResponseEntity<>(scrappingService.getChartDataNewWeb(no,timeduration), HttpStatus.OK);
     }
 
     @GetMapping("/chart/market/company/{no}/{timeduration}/")
-    public ResponseEntity<Map<String,List<?>>> getChartOfCompany(@PathVariable int no, @PathVariable char timeduration) throws IOException{
-        return new ResponseEntity<>(scrappingService.getChartofCompanyData(no,timeduration), HttpStatus.OK);
+    public ResponseEntity<Map<String,List<?>>> getChartofCompanyDataNewWeb(@PathVariable int no, @PathVariable char timeduration) throws IOException, java.text.ParseException {
+        return new ResponseEntity<>(scrappingService.getChartofCompanyDataNewWeb(no,timeduration), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-turnover")
