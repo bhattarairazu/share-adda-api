@@ -2,11 +2,12 @@ package com.shareadda.api.ShareAdda.LiveMarket.controller;
 
 
 import com.shareadda.api.ShareAdda.LiveMarket.domain.*;
+import com.shareadda.api.ShareAdda.LiveMarket.domain.MarketSummary;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
-import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
-import com.shareadda.api.ShareAdda.LiveMarket.repository.ListedCompanyRepository;
+import com.shareadda.api.ShareAdda.LiveMarket.repository.*;
 import com.shareadda.api.ShareAdda.LiveMarket.service.ScrappingService;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/scrape-data")
@@ -32,9 +37,54 @@ public class LiveMarketController {
     @Autowired
     private ListedCompanyRepository listedCompanyRepository;
 
+    @Autowired
+    private FloorSheetRepository floorSheetRepository;
+
+    @Autowired
+    private IndiciesSubindiciesRepository indicieSubindiciesRepository;
+
+    @Autowired
+    private com.shareadda.api.ShareAdda.LiveMarket.repository.MarketSummary marketSummaryRepository;
+
+    @Autowired
+    private TopLoosersRepository topLoosersRepository;
+
+    @Autowired
+    private TopGainersRepository topGainersRepository;
+
+    @Autowired
+    private TopShareTradedRepository topShareTradedRepository;
+
+    @Autowired
+    private TopTurnOverRepository topTurnOverRepository;
+
+    @Autowired
+    private TopTranscationsRepository topTranscationsRepository;
+
+    private ResponseEntity<?> getMessage(){
+
+            Map<String,String> maps = new HashMap<>();
+            maps.put("message","Market Closed");
+            return new ResponseEntity<>(maps,HttpStatus.OK);
+    }
+
+    private boolean getMarketStatus(){
+        if(LocalTime.now().getHour()>=15 || LocalTime.now().getHour()<11) {
+            return true;
+        }
+        return false;
+    }
+
     @GetMapping("/todaysprice")
-    public ResponseEntity<LiveMarketDto> getTodayStockPrice() throws IOException {
+    public ResponseEntity<?> getTodayStockPrice() throws IOException {
+        System.out.println(LocalTime.now().getHour());
+
+        if(getMarketStatus())
+            return getMessage();
+
         return new ResponseEntity<>(scrappingService.scrapeLiveMarket(), HttpStatus.OK);
+
+
 
     }
     @GetMapping("/news/{newsSource}")
@@ -50,28 +100,63 @@ public class LiveMarketController {
 
     @GetMapping("/floorsheet/{stockSymbol}")
     public ResponseEntity<FloorSheetDto> getFloorSheet(@PathVariable String stockSymbol) throws IOException {
+        if(getMarketStatus() && stockSymbol.equalsIgnoreCase("all")) {
+            FloorSheetDto floorSheetDto = new FloorSheetDto();
+            floorSheetDto.setDate(LocalDate.now()+" 00:00:00");
+            floorSheetDto.setResults(floorSheetRepository.findAll());
+            return new ResponseEntity<>(floorSheetDto, HttpStatus.OK);
+        }
+        if(getMarketStatus() && !stockSymbol.equalsIgnoreCase("all")){
+            FloorSheetDto floorSheetDto = new FloorSheetDto();
+            floorSheetDto.setDate(LocalDate.now()+" 00:00:00");
+            String finalStockSymbol = stockSymbol;
+            List<FloorSheet> floorSheets = floorSheetRepository.findAll().stream().filter(floor->floor.getSymbol().equalsIgnoreCase(finalStockSymbol)).collect(Collectors.toList());
+            floorSheetDto.setResults(floorSheets);
+            return new ResponseEntity<>(floorSheetDto, HttpStatus.OK);
+        }
         if (stockSymbol.equalsIgnoreCase("all"))
-                stockSymbol = null;
+            stockSymbol = null;
         return new ResponseEntity<>(scrappingService.getFloorSheet(stockSymbol), HttpStatus.OK);
     }
 
     @GetMapping("/indicies-subindicies")
     public ResponseEntity<IndiciesSubIndiciesDto> getIndiciesSubindicies() throws IOException {
+        if(getMarketStatus()){
+            IndiciesSubIndiciesDto indiciesdto = new IndiciesSubIndiciesDto();
+            indiciesdto.setDate(LocalDate.now()+" 00:00:00");
+            indiciesdto.setResults(indicieSubindiciesRepository.findAll());
+            return new ResponseEntity<>(indiciesdto, HttpStatus.OK);
+        }
         return new ResponseEntity<>(scrappingService.indiciesSubindicies(), HttpStatus.OK);
     }
 
     @GetMapping("/market-summary")
     public ResponseEntity<MarketSummary> getMarketSumary() throws IOException {
+        if (getMarketStatus()) {
+            return new ResponseEntity<>(marketSummaryRepository.findAll().get(0), HttpStatus.OK);
+        }
         return new ResponseEntity<>(scrappingService.getMarketSummary(), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-loosers")
     public ResponseEntity<TopLoosersDto> getTopLoosers() throws IOException{
+        if (getMarketStatus()) {
+            TopLoosersDto topLoosersDto = new TopLoosersDto();
+            topLoosersDto.setDate(LocalDate.now()+" 00:00:00");
+            topLoosersDto.setResults(topLoosersRepository.findAll());
+            return new ResponseEntity<>(topLoosersDto, HttpStatus.OK);
+        }
         return new ResponseEntity<>(scrappingService.getTopLoosers(), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-gainers")
     public ResponseEntity<TopGainersDto> getTopGainers() throws IOException{
+        if (getMarketStatus()) {
+            TopGainersDto topGainersDto = new TopGainersDto();
+            topGainersDto.setDate(LocalDate.now()+" 00:00:00");
+            topGainersDto.setResults(topGainersRepository.findAll());
+            return new ResponseEntity<>(topGainersDto, HttpStatus.OK);
+        }
         return new ResponseEntity<>(scrappingService.getTopGainer(), HttpStatus.OK);
 
     }
@@ -98,16 +183,35 @@ public class LiveMarketController {
 
     @GetMapping("/get-top-turnover")
     public ResponseEntity<TopTurnoverDto> getTopTurnOver() throws IOException{
+        if (getMarketStatus()) {
+            TopTurnoverDto topTurnoverDto = new TopTurnoverDto();
+            topTurnoverDto.setDate(LocalDate.now()+" 00:00:00");
+            topTurnoverDto.setResults(topTurnOverRepository.findAll());
+            return new ResponseEntity<>(topTurnoverDto, HttpStatus.OK);
+        }
+
         return new ResponseEntity<>(scrappingService.getTopTurnOver(), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-sharetraded")
     public ResponseEntity<TopShareTradedDto> getTopShareTraded() throws IOException{
+        if (getMarketStatus()) {
+            TopShareTradedDto topShareTradedDto = new TopShareTradedDto();
+            topShareTradedDto.setDate(LocalDate.now()+" 00:00:00");
+            topShareTradedDto.setResults(topShareTradedRepository.findAll());
+            return new ResponseEntity<>(topShareTradedDto, HttpStatus.OK);
+        }
         return new ResponseEntity<>(scrappingService.getTopShareTraded(), HttpStatus.OK);
     }
 
     @GetMapping("/get-top-transcations")
     public ResponseEntity<TopTranscationsDto> getTopTranscations() throws IOException{
+        if (getMarketStatus()) {
+            TopTranscationsDto topTranscationsDto = new TopTranscationsDto();
+            topTranscationsDto.setDate(LocalDate.now()+" 00:00:00");
+            topTranscationsDto.setResults(topTranscationsRepository.findAll());
+            return new ResponseEntity<>(topTranscationsDto, HttpStatus.OK);
+        }
         return new ResponseEntity<>(scrappingService.getTopTranscations(), HttpStatus.OK);
     }
 

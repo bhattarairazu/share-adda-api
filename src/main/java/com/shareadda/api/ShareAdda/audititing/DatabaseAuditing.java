@@ -16,6 +16,8 @@ public class DatabaseAuditing implements AuditorAware<String> {
         if(authentication!=null){
             name = authentication.getName();
 
+        }else{
+            name="SCRAPPER";
         }
         return Optional.of(name);
         //return Optional.of("razu");
