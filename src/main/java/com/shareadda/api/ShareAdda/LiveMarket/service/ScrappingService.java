@@ -193,6 +193,7 @@ public class ScrappingService {
         }
         LiveMarketDto liveMarketDto = new LiveMarketDto();
         liveMarketDto.setDate(newDate);
+        liveMarketDto.setIsMarketOpen(true);
         liveMarketDto.setResults(liveMarketList);
 
         //String url = "http://www.nepalstock.com/todaysprice?_limit=500";
@@ -252,6 +253,7 @@ public class ScrappingService {
         }
         IndiciesSubIndiciesDto indiciesSubIndiciesDto = new IndiciesSubIndiciesDto();
         indiciesSubIndiciesDto.setDate(allDate);
+        indiciesSubIndiciesDto.setIsMarketOpen(true);
         indiciesSubIndiciesDto.setResults(indiciesSubindiciesList);
 
         return indiciesSubIndiciesDto;

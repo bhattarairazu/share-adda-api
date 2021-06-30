@@ -15,5 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 public class IndiciesSubIndiciesDto {
     private String date;
+    private Boolean isMarketOpen;
     private List<IndiciesSubindicies> results = new ArrayList<>();
 }

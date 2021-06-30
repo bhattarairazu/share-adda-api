@@ -15,5 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 public class LiveMarketDto {
     private String date;
+    private Boolean isMarketOpen;
     private List<LiveMarket> results = new ArrayList<>();
 }

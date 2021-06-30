@@ -61,10 +61,13 @@ public class LiveMarketController {
     @Autowired
     private TopTranscationsRepository topTranscationsRepository;
 
+    @Autowired
+    private LiveMarketRepository liveMarketRepository;
+
     private ResponseEntity<?> getMessage(){
 
-            Map<String,String> maps = new HashMap<>();
-            maps.put("message","Market Closed");
+            Map<String,Boolean> maps = new HashMap<>();
+            maps.put("isMarketOpen",false);
             return new ResponseEntity<>(maps,HttpStatus.OK);
     }
 
@@ -79,9 +82,13 @@ public class LiveMarketController {
     public ResponseEntity<?> getTodayStockPrice() throws IOException {
         System.out.println(LocalTime.now().getHour());
 
-        if(getMarketStatus())
-            return getMessage();
-
+        if(getMarketStatus()) {
+            LiveMarketDto liveMarketDto = new LiveMarketDto();
+            liveMarketDto.setIsMarketOpen(!getMarketStatus());
+            liveMarketDto.setResults(liveMarketRepository.findAll());
+            liveMarketDto.setDate(LocalDate.now()+" 03:00:00");
+            return new ResponseEntity<>(liveMarketDto,HttpStatus.OK);
+        }
         return new ResponseEntity<>(scrappingService.scrapeLiveMarket(), HttpStatus.OK);
 
 
@@ -124,6 +131,7 @@ public class LiveMarketController {
         if(getMarketStatus()){
             IndiciesSubIndiciesDto indiciesdto = new IndiciesSubIndiciesDto();
             indiciesdto.setDate(LocalDate.now()+" 00:00:00");
+            indiciesdto.setIsMarketOpen(!getMarketStatus());
             indiciesdto.setResults(indicieSubindiciesRepository.findAll());
             return new ResponseEntity<>(indiciesdto, HttpStatus.OK);
         }
