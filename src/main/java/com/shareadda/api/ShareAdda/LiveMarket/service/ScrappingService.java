@@ -392,7 +392,7 @@ public class ScrappingService {
         for(int i = 0;i<trs.size()-1;i++){
             Elements tds = trs.get(i).select("td");
             ListedCompanies listedCompanies = new ListedCompanies();
-            listedCompanies.setSymbol(tds.get(3).text());
+            listedCompanies.setCompanyCode(tds.get(3).text());
             listedCompanies.setName(tds.get(2).text());
             listedCompanies.setCompanyType(tds.get(4).text());
             listedCompaniesList.add(listedCompanies);
@@ -400,7 +400,7 @@ public class ScrappingService {
         List<CompanyWithSymbolNumber> listcompanysymbolno = getSymbolNumber();
         for(int j = 0;j<listcompanysymbolno.size();j++){
             for (int i = 0;i<listedCompaniesList.size();i++){
-                if(listcompanysymbolno.get(j).getSymbol().equalsIgnoreCase(listedCompaniesList.get(i).getSymbol())){
+                if(listcompanysymbolno.get(j).getSymbol().equalsIgnoreCase(listedCompaniesList.get(i).getCompanyCode())){
                     listedCompaniesList.get(i).setCompanyNo(listcompanysymbolno.get(j).getNumber());
                     break;
                 }

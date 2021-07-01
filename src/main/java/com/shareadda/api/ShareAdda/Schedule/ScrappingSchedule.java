@@ -57,12 +57,13 @@ public class ScrappingSchedule {
         saveLiveMarket();
     }
 
-    @Scheduled(cron="0 59 14 * * SUN-THU")
+    @Scheduled(cron="00 59 14 * * SUN-THU")
     public void liveScrapCronJob() throws IOException,NullPointerException {
         log.info("Scrapping server hit: for live data");
         saveLiveMarket();
     }
-    @Scheduled(cron ="0 1 15 * * SUN-THU")
+
+    @Scheduled(cron ="00 1 15 * * SUN-FRI")
     public void reportCurrentTime() {
         log.info("Scrapping data from nepal stock  mon-thur 3:01 PM {}", dateFormat.format(new Date()));
         try {
