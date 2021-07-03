@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.*;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.*;
 import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
+import com.shareadda.api.ShareAdda.LiveMarket.repository.BrokerRepository;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.ListedCompanyRepository;
 import com.shareadda.api.ShareAdda.Utils.ThisLocalizedWeek;
@@ -50,6 +51,9 @@ public class ScrappingService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private BrokerRepository brokerRepository;
 
     public JSONArray newsList(String source) throws ParseException {
         if(source.equalsIgnoreCase("merolagani")){
@@ -381,7 +385,8 @@ public class ScrappingService {
 
         }
         System.out.println(brokersList);
-        return brokersList;
+        List<Brokers> savedBrokers = brokerRepository.saveAll(brokersList);
+        return savedBrokers;
     }
     public List<ListedCompanies> getAllListedCompanies() throws IOException {
         List<ListedCompanies> listedCompaniesList = new ArrayList<>();
@@ -565,11 +570,18 @@ public class ScrappingService {
 //            time:["2019-11-11 10:00","2019-11-11 10:00"],
 //            data:[3000,4000]
 //        }
+        //calculating interval
+        int interval = 0;
+        if(jsonArray.size()>100){
+            interval = (int)(jsonArray.size() * 0.01);
+        }else{
+            interval = 1;
+        }
         Map<String,List<?>> chartMap = new HashMap<>();
         List<String> dates = new ArrayList<>();
         List<Double> datas = new ArrayList<>();
         System.out.println(jsonArray.size());
-        for(int i = 0;i<jsonArray.size();i++){
+        for(int i = 0;i<jsonArray.size();i+=interval){
             JsonArray innerarray = (JsonArray) jp.parse(String.valueOf(jsonArray.get(i)));
             dates.add(getDate(Long.parseLong(String.valueOf(innerarray.get(0)))));
             datas.add(Double.parseDouble(String.valueOf(innerarray.get(1))));
@@ -584,10 +596,15 @@ public class ScrappingService {
 
     }
     private String getDate(long time){
-        Timestamp timestamp = new Timestamp(time*1000);
-        Date date = timestamp;
-        System.out.println("date "+date);
-        return String.valueOf(date);
+
+
+        Date date = new Date(time);
+        // format of the date
+        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        jdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String java_date = jdf.format(date);
+
+        return java_date;
     }
 //    private String getDateForCompany(long time){
 //        Timestamp timestamp = new Timestamp(time);
@@ -624,23 +641,33 @@ public class ScrappingService {
 
         String ss = restTemplate.getForObject(url, String.class);
         //JSONArray ss = restTemplate.getForObject(url, JSONArray.class);
+        System.out.println(ss);
         JsonParser jp = new JsonParser();
-        JsonArray jsonArray = (JsonArray) jp.parse(ss);
+        JsonArray jsonArray =  (JsonArray) jp.parse(ss);
+        System.out.println(jsonArray);
 //        {
 //            time:["2019-11-11 10:00","2019-11-11 10:00"],
 //            data:[3000,4000]
 //        }
+        //calculating interval
+        int interval = 0;
+        if(jsonArray.size()>100){
+        interval = (int)(jsonArray.size() * 0.01);
+        }else{
+         interval = 1;
+        }
         Map<String,List<?>> chartMap = new HashMap<>();
         List<String> dates = new ArrayList<>();
         List<Double> datas = new ArrayList<>();
-        System.out.println(jsonArray.size());
-        for(int i = 0;i<jsonArray.size();i++){
+        System.out.println(jsonArray.size()+" interval "+interval);
+        for(int i = 0;i<jsonArray.size();i+=interval){
+            //System.out.println("inside for loog "+jsonArray.get(i));
             JsonArray innerarray = (JsonArray) jp.parse(String.valueOf(jsonArray.get(i)));
             dates.add(getDate(Long.parseLong(String.valueOf(innerarray.get(0)))));
             datas.add(Double.parseDouble(String.valueOf(innerarray.get(1))));
 
         }
-
+        System.out.println("Finished for loop");
         chartMap.put("time", dates);
         chartMap.put("data", datas);
         //System.out.println(dates);
@@ -916,5 +943,9 @@ public class ScrappingService {
         //}
         return marketDepthDto;
     }
-
+    public JSONObject getMarketStatus(){
+        String url = "https://newweb.nepalstock.com/api/nots/nepse-data/market-open";
+        JSONObject jsonobject = restTemplate.getForObject(url,JSONObject.class);
+        return jsonobject;
+    }
 }

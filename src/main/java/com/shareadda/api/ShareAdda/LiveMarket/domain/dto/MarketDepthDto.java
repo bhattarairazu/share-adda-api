@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class MarketDepthDto {
     private String date;
+    //private boolean isMarketOpen;
     private String ltp;
     private String pointschange;
     private String percentchange;

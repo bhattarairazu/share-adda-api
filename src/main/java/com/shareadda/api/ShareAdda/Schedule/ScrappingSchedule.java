@@ -50,12 +50,6 @@ public class ScrappingSchedule {
 
     private static final Logger log = LoggerFactory.getLogger(ScrappingSchedule.class);
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-    //testing scrapping
-    @Scheduled(cron="0 50 14 * * SUN-THU")
-    public void liveScrapCronJobTest() throws IOException,NullPointerException {
-        log.info("Scrapping server hit: for live data");
-        saveLiveMarket();
-    }
 
     @Scheduled(cron="00 59 14 * * SUN-THU")
     public void liveScrapCronJob() throws IOException,NullPointerException {
@@ -63,7 +57,7 @@ public class ScrappingSchedule {
         saveLiveMarket();
     }
 
-    @Scheduled(cron ="00 1 15 * * SUN-FRI")
+    @Scheduled(cron ="00 01 15 * * SUN-THU")
     public void reportCurrentTime() {
         log.info("Scrapping data from nepal stock  mon-thur 3:01 PM {}", dateFormat.format(new Date()));
         try {
