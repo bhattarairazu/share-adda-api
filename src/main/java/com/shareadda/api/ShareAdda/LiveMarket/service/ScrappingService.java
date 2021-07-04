@@ -290,7 +290,15 @@ public class ScrappingService {
         MarketSummary marketSummary = new MarketSummary();
         Map<String,String> newMap = new HashMap<>();
         String url = "http://www.nepalstock.com/";
-        String []headingarr = {"date","totalTurnover","totalTradedShare","totalTranscations","totalScriptTraded","totalMarketCapitalization","floatedMarketCapitalization"};
+        String []headingarr = null;
+        int size = 0;
+        if (getMarketStatus().get("isOpen").equals("OPEN")) {
+            size = 5;
+            headingarr = new String[]{"date", "totalTurnover", "totalTradedShare", "totalTranscations", "totalScriptTraded"};
+        }else{
+            size = 7;
+            headingarr = new String[]{"date", "totalTurnover", "totalTradedShare", "totalTranscations", "totalScriptTraded", "totalMarketCapitalization", "floatedMarketCapitalization"};
+        }
         Document table = Jsoup.connect(url).get();
         String []date = table.getElementsByClass("col-xs-12 col-md-12 col-sm-12 panel panel-default").get(1).getElementsByClass("panel-heading").text().split(" ");
         //String newdate = date.substring(5,15);
@@ -299,7 +307,7 @@ public class ScrappingService {
         String allDate = newDate+" " + time;
         newMap.put(headingarr[0],allDate);
         Element element = table.getElementsByClass("table table-hover table-condensed").get(3);
-        List<Element> trs = element.select("tr").subList(1,7);
+        List<Element> trs = element.select("tr").subList(1,size);
         for(int i = 0;i<trs.size();i++){
             Elements td=trs.get(i).select("td");
             newMap.put(headingarr[i+1],td.get(1).text());
@@ -927,7 +935,7 @@ public class ScrappingService {
             marketDepthDto.setHigh(tds.get(3).text().split(" ")[1]);
             marketDepthDto.setLow(tds.get(4).text().split(" ")[1]);
             marketDepthDto.setClose(tds.get(5).text().trim().split(" ")[1]);
-
+            marketDepthDto.setIsMarketOpen(true);
            //for total quantity
             Element table = tableorders.get(2).select("tr").get(0);
             Elements tds_qnt = table.select("td");
