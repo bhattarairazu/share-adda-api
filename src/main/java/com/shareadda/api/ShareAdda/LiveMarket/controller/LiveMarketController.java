@@ -73,7 +73,7 @@ public class LiveMarketController {
 //            return true;
 //        }
         JSONObject jsonobj = scrappingService.getMarketStatus();
-        if(!jsonobj.get("isOpen").equals("isOpen")) return true;
+        if(jsonobj.get("isOpen").equals("OPEN")) return true;
         return false;
     }
 
@@ -81,9 +81,9 @@ public class LiveMarketController {
     public ResponseEntity<?> getTodayStockPrice() throws IOException {
         System.out.println(LocalTime.now().getHour());
 
-        if(getMarketStatus()) {
+        if(!getMarketStatus()) {
             LiveMarketDto liveMarketDto = new LiveMarketDto();
-            liveMarketDto.setIsMarketOpen(!getMarketStatus());
+            liveMarketDto.setIsMarketOpen(false);
             liveMarketDto.setResults(liveMarketRepository.findAll());
             liveMarketDto.setDate(LocalDate.now()+" 15:00:00");
             return new ResponseEntity<>(liveMarketDto,HttpStatus.OK);
@@ -106,13 +106,13 @@ public class LiveMarketController {
 
     @GetMapping("/floorsheet/{stockSymbol}")
     public ResponseEntity<FloorSheetDto> getFloorSheet(@PathVariable String stockSymbol) throws IOException {
-        if(getMarketStatus() && stockSymbol.equalsIgnoreCase("all")) {
+        if(!getMarketStatus() && stockSymbol.equalsIgnoreCase("all")) {
             FloorSheetDto floorSheetDto = new FloorSheetDto();
             floorSheetDto.setDate(LocalDate.now()+" 15:00:00");
             floorSheetDto.setResults(floorSheetRepository.findAll());
             return new ResponseEntity<>(floorSheetDto, HttpStatus.OK);
         }
-        if(getMarketStatus() && !stockSymbol.equalsIgnoreCase("all")){
+        if(!getMarketStatus() && !stockSymbol.equalsIgnoreCase("all")){
             FloorSheetDto floorSheetDto = new FloorSheetDto();
             floorSheetDto.setDate(LocalDate.now()+" 15:00:00");
             String finalStockSymbol = stockSymbol;
@@ -127,10 +127,10 @@ public class LiveMarketController {
 
     @GetMapping("/indicies-subindicies")
     public ResponseEntity<IndiciesSubIndiciesDto> getIndiciesSubindicies() throws IOException {
-        if(getMarketStatus()){
+        if(!getMarketStatus()){
             IndiciesSubIndiciesDto indiciesdto = new IndiciesSubIndiciesDto();
             indiciesdto.setDate(LocalDate.now()+" 15:00:00");
-            indiciesdto.setIsMarketOpen(!getMarketStatus());
+            indiciesdto.setIsMarketOpen(false);
             indiciesdto.setResults(indicieSubindiciesRepository.findAll());
             return new ResponseEntity<>(indiciesdto, HttpStatus.OK);
         }
@@ -139,7 +139,7 @@ public class LiveMarketController {
 
     @GetMapping("/market-summary")
     public ResponseEntity<MarketSummary> getMarketSumary() throws IOException {
-        if (getMarketStatus()) {
+        if (!getMarketStatus()) {
             return new ResponseEntity<>(marketSummaryRepository.findAll().get(0), HttpStatus.OK);
         }
         return new ResponseEntity<>(scrappingService.getMarketSummary(), HttpStatus.OK);
@@ -147,7 +147,7 @@ public class LiveMarketController {
 
     @GetMapping("/get-top-loosers")
     public ResponseEntity<TopLoosersDto> getTopLoosers() throws IOException{
-        if (getMarketStatus()) {
+        if (!getMarketStatus()) {
             TopLoosersDto topLoosersDto = new TopLoosersDto();
             topLoosersDto.setDate(LocalDate.now()+" 15:00:00");
             topLoosersDto.setResults(topLoosersRepository.findAll());
@@ -158,7 +158,7 @@ public class LiveMarketController {
 
     @GetMapping("/get-top-gainers")
     public ResponseEntity<TopGainersDto> getTopGainers() throws IOException{
-        if (getMarketStatus()) {
+        if (!getMarketStatus()) {
             TopGainersDto topGainersDto = new TopGainersDto();
             topGainersDto.setDate(LocalDate.now()+" 15:00:00");
             topGainersDto.setResults(topGainersRepository.findAll());
@@ -199,7 +199,7 @@ public class LiveMarketController {
 
     @GetMapping("/get-top-turnover")
     public ResponseEntity<TopTurnoverDto> getTopTurnOver() throws IOException{
-        if (getMarketStatus()) {
+        if (!getMarketStatus()) {
             TopTurnoverDto topTurnoverDto = new TopTurnoverDto();
             topTurnoverDto.setDate(LocalDate.now()+" 15:00:00");
             topTurnoverDto.setResults(topTurnOverRepository.findAll());
@@ -211,7 +211,7 @@ public class LiveMarketController {
 
     @GetMapping("/get-top-sharetraded")
     public ResponseEntity<TopShareTradedDto> getTopShareTraded() throws IOException{
-        if (getMarketStatus()) {
+        if (!getMarketStatus()) {
             TopShareTradedDto topShareTradedDto = new TopShareTradedDto();
             topShareTradedDto.setDate(LocalDate.now()+" 15:00:00");
             topShareTradedDto.setResults(topShareTradedRepository.findAll());
@@ -222,7 +222,7 @@ public class LiveMarketController {
 
     @GetMapping("/get-top-transcations")
     public ResponseEntity<TopTranscationsDto> getTopTranscations() throws IOException{
-        if (getMarketStatus()) {
+        if (!getMarketStatus()) {
             TopTranscationsDto topTranscationsDto = new TopTranscationsDto();
             topTranscationsDto.setDate(LocalDate.now()+" 15:00:00");
             topTranscationsDto.setResults(topTranscationsRepository.findAll());
@@ -238,9 +238,9 @@ public class LiveMarketController {
 
     @GetMapping("/market-depth/{symbol}")
     public ResponseEntity<?> getMarketDepth(@PathVariable String symbol) throws IOException {
-        if (getMarketStatus()) {
+        if (!getMarketStatus()) {
             Map<String, Boolean> maps = new HashMap<>();
-            maps.put("isMarketOpen",!getMarketStatus());
+            maps.put("isMarketOpen",false);
             return new ResponseEntity<>(maps, HttpStatus.OK);
         }
         return new ResponseEntity<>(scrappingService.getMarketDepth(symbol),HttpStatus.OK);
