@@ -12,7 +12,9 @@ import java.io.Serializable;
 public class PortfolioAddRequestDto implements Serializable {
     String stockSymbol;
     double totalUnits;
-    double perUnitPrice;
+    double wacc;
     String userId;
+    String transcationType;
+    String transcationDate;
 
 }

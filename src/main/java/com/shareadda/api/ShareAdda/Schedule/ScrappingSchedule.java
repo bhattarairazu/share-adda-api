@@ -51,7 +51,7 @@ public class ScrappingSchedule {
     private static final Logger log = LoggerFactory.getLogger(ScrappingSchedule.class);
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-    @Scheduled(cron="00 11 12 * * SUN-THU")
+    @Scheduled(cron="00 58 14 * * SUN-THU")
     public void liveScrapCronJob() throws IOException,NullPointerException {
         log.info("Scrapping server hit: for live data");
         saveLiveMarket();
@@ -70,7 +70,7 @@ public class ScrappingSchedule {
             saveTopShareTraded();
             saveTopTranscations();
             saveTopTurnOver();
-        } catch (IOException e) {
+        } catch (IOException | IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
     }
@@ -82,6 +82,7 @@ public class ScrappingSchedule {
     }
 
     private void saveLiveMarket() throws IOException{
+        liveMarketRepository.deleteAll();
         LiveMarketDto liveMarketDto = scrappingService.scrapeLiveMarket();
         liveMarketRepository.saveAll(liveMarketDto.getResults());
         log.info("Saved Live Market Data of "+ LocalDate.now());

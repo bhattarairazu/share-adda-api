@@ -45,30 +45,45 @@ public class PortfolioSummaryIImpl implements PortfolioSummaryI {
 
     @Override
     public PortfolioSummary add(PortfolioAddRequestDto portfolioAddRequestDto) {
+
         Portfolio portfolio = new Portfolio();
-        String companyNo = companyAndSymbolRepository.findBySymbol(portfolioAddRequestDto.getStockSymbol()).getNumber();
+        String companyNo = companyAndSymbolRepository.findBySymbol(portfolioAddRequestDto.getStockSymbol().toUpperCase()).getNumber();
         double units = portfolioAddRequestDto.getTotalUnits();
-        double perunitprice = portfolioAddRequestDto.getPerUnitPrice();
+        double perunitprice = portfolioAddRequestDto.getWacc();
         //sracpe latest ltp accourding to company symbol
         double latestTotalPrice = ltp * units;
 
-        //setting portfolio
+        //setting portfolio adding portfolio if it is buy
         portfolio.setStockSymbol(portfolioAddRequestDto.getStockSymbol());
         portfolio.setStockCode(companyNo);
         portfolio.setTotalUnits(units);
         portfolio.setLtp(ltp);
         portfolio.setCurrentValue(latestTotalPrice);
-        portfolio.setInvestment(latestTotalPrice);
+        portfolio.setInvestment(perunitprice*units);
         portfolio.setSoldAmount(0);
         portfolio.setSoldUnit(0);
         portfolio.setWacc(perunitprice);
         portfolio.setDividend(0);
-        portfolio.setTodaysLoss(0);
-        portfolio.setTodaysProfit(0);
-        portfolio.setOverallLoss(0);
-        portfolio.setOverallProfit(0);
+        if(ltp>perunitprice){
+            double profit = latestTotalPrice-(perunitprice*units);
+            portfolio.setTodaysProfit(profit);
+            portfolio.setOverallProfit(portfolio.getOverallProfit()+portfolio.getTodaysProfit());
+        }else if(ltp<perunitprice){
+            double loss = (perunitprice*units)-latestTotalPrice;
+            portfolio.setTodaysLoss(loss);
+            portfolio.setOverallLoss(portfolio.getOverallLoss()+portfolio.getTodaysLoss());
+
+        }else{
+            portfolio.setTodaysLoss(0);
+            portfolio.setTodaysProfit(0);
+            portfolio.setOverallLoss(portfolio.getOverallLoss());
+            portfolio.setOverallProfit(portfolio.getOverallProfit());
+        }
+
         portfolio.setTotalReceivableAmount(latestTotalPrice);
         portfolio.setUserId(portfolioAddRequestDto.getUserId());
+        portfolio.setTranscationDate(portfolioAddRequestDto.getTranscationDate());
+        portfolio.setTranscationType(portfolioAddRequestDto.getTranscationType());
 
         List<Portfolio> portfoliosList = new ArrayList<>();
         portfoliosList.add(portfolio);

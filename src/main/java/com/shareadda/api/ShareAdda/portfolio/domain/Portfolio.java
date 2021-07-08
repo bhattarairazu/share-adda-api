@@ -29,5 +29,7 @@ public class Portfolio implements Serializable {
     private double overallProfit=0;
     private double totalReceivableAmount=0;
     private String userId;
+    private String transcationType;
+    private String transcationDate;
 
 }

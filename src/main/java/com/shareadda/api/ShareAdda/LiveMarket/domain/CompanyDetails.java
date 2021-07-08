@@ -42,7 +42,11 @@ public class CompanyDetails implements Serializable {
     private String pbv;
     private String hunderEightyDayAverage;
     private String companyNo;
-
+    private double highPrice;
+    private double lowPrice;
+    private double previousClosePrice;
+    private double openPrice;
+    private double pointsChange;
 
     @Indexed
     @CreatedDate

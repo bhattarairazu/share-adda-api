@@ -7,6 +7,7 @@ import com.shareadda.api.ShareAdda.LiveMarket.domain.dto.*;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.BrokerRepository;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.ListedCompanyRepository;
+import com.shareadda.api.ShareAdda.LiveMarket.repository.LiveMarketRepository;
 import com.shareadda.api.ShareAdda.Utils.ThisLocalizedWeek;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -54,6 +55,9 @@ public class ScrappingService {
 
     @Autowired
     private BrokerRepository brokerRepository;
+
+    @Autowired
+    private LiveMarketRepository liveMarketRepository;
 
     public JSONArray newsList(String source) throws ParseException {
         if(source.equalsIgnoreCase("merolagani")){
@@ -450,9 +454,29 @@ public class ScrappingService {
             k++;
 
         }
+        Optional<LiveMarket> liveMarket = null;
+        if(getMarketStatus().get("isOpen").equals("OPEN")) {
+            LiveMarketDto liveMarketDto = scrapeLiveMarket();
+             liveMarket = liveMarketDto.getResults().stream().filter(l -> l.getSymbol().equalsIgnoreCase(symbol.toUpperCase())).findFirst();
+            newMap.put("highPrice", liveMarket.get().getHigh());
+            newMap.put("lowPrice", liveMarket.get().getLow());
+            newMap.put("openPrice", liveMarket.get().getOpen());
+            newMap.put("previousClosePrice", liveMarket.get().getPreviousclosing());
+            newMap.put("pointsChange", liveMarket.get().getPointchange());
+        }else{
+            List<LiveMarket> liveMarkets = liveMarketRepository.findBySymbolOrderByCreationDateDesc(symbol.toUpperCase());
+            System.out.println("live market "+liveMarket);
+            newMap.put("highPrice", liveMarkets.get(0).getHigh());
+            newMap.put("lowPrice", liveMarkets.get(0).getLow());
+            newMap.put("openPrice", liveMarkets.get(0).getOpen());
+            newMap.put("previousClosePrice", liveMarkets.get(0).getPreviousclosing());
+            newMap.put("pointsChange", liveMarkets.get(0).getPointchange());
+        }
 
-        String companyNo = companyAndSymbolRepository.findBySymbol(newMap.get("symbol")).getNumber();
-        newMap.put("companyNo",companyNo);
+            String companyNo = companyAndSymbolRepository.findBySymbol(newMap.get("symbol")).getNumber();
+            newMap.put("companyNo", companyNo);
+
+
         ObjectMapper mapper = new ObjectMapper();
         companyDetails = mapper.convertValue(newMap,CompanyDetails.class);
         // System.out.println(tables);
@@ -837,7 +861,7 @@ public class ScrappingService {
         return topTurnoverDto;
 
     }
-    public TopShareTradedDto getTopShareTraded() throws IOException {
+    public TopShareTradedDto getTopShareTraded() throws IOException,IndexOutOfBoundsException {
         String url = "http://www.nepalstock.com/turnovers";
         List<TopShareTraded> topShareTradedList = new ArrayList<>();
         Document doc = Jsoup.connect(url).get();
@@ -863,7 +887,7 @@ public class ScrappingService {
 
     }
 
-    public TopTranscationsDto getTopTranscations() throws IOException {
+    public TopTranscationsDto getTopTranscations() throws IOException,IndexOutOfBoundsException {
         String url = "http://www.nepalstock.com/turnovers";
         List<TopTranscations> topTranscationsList = new ArrayList<>();
         Document doc = Jsoup.connect(url).get();

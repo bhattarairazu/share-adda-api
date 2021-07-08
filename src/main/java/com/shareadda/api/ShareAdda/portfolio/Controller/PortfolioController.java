@@ -20,7 +20,7 @@ public class PortfolioController {
     private PortfolioSummaryI portfolioSummaryI;
 
     @PostMapping("/")
-    public ResponseEntity<?> loginUser(@Valid @RequestBody PortfolioAddRequestDto portfolioAddRequestDto){
+    public ResponseEntity<?> addPortfolio(@Valid @RequestBody PortfolioAddRequestDto portfolioAddRequestDto){
         return new ResponseEntity<>(portfolioSummaryI.add(portfolioAddRequestDto), HttpStatus.CREATED);
     }
 
