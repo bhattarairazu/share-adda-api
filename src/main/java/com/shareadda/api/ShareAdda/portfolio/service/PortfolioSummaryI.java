@@ -14,5 +14,7 @@ public interface PortfolioSummaryI {
 
     PortfolioSummary add(PortfolioAddRequestDto portfolioAddRequestDto);
 
+    void deleteById(String id);
 
+    PortfolioSummary deleteByIdAndSymbol(String id, String symbol);
 }

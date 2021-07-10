@@ -16,5 +16,6 @@ public class PortfolioAddRequestDto implements Serializable {
     String userId;
     String transcationType;
     String transcationDate;
+    String portfolioSummaryId;
 
 }

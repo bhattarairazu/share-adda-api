@@ -34,6 +34,10 @@ public class PortfolioSummary extends Auditing implements Serializable {
 
     private String userId;
 
+    private String name;
+
+    private String type;
+
     private List<Portfolio> allPortfolio = new ArrayList<>();
 
     public void setId(String id) {

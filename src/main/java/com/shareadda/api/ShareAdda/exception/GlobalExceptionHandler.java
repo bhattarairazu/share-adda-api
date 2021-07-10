@@ -29,6 +29,16 @@ public class GlobalExceptionHandler {
         errorDetail.setDeveloperMessage(ex.getClass().getName());
         return new ResponseEntity<>(errorDetail, null, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(BackendException.class)
+    public ResponseEntity<Object> resourceNotFound(BackendException ex,
+                                                   HttpServletRequest request) {
+        ErrorDetail errorDetail = new ErrorDetail();
+        errorDetail.setTimeStamp(new Date().getTime());
+        errorDetail.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errorDetail.setMessage(ex.getMessage());
+        errorDetail.setDeveloperMessage(ex.getClass().getName());
+        return new ResponseEntity<>(errorDetail, null, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Object> forbiddenException(ForbiddenException ex, WebRequest request) {
         ErrorDetail errorDetail = new ErrorDetail();
