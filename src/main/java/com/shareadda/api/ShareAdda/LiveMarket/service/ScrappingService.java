@@ -454,24 +454,24 @@ public class ScrappingService {
             k++;
 
         }
-        Optional<LiveMarket> liveMarket = null;
-        if(getMarketStatus().get("isOpen").equals("OPEN")) {
-            LiveMarketDto liveMarketDto = scrapeLiveMarket();
-             liveMarket = liveMarketDto.getResults().stream().filter(l -> l.getSymbol().equalsIgnoreCase(symbol.toUpperCase())).findFirst();
-            newMap.put("highPrice", liveMarket.get().getHigh());
-            newMap.put("lowPrice", liveMarket.get().getLow());
-            newMap.put("openPrice", liveMarket.get().getOpen());
-            newMap.put("previousClosePrice", liveMarket.get().getPreviousclosing());
-            newMap.put("pointsChange", liveMarket.get().getPointchange());
-        }else{
-            List<LiveMarket> liveMarkets = liveMarketRepository.findBySymbolOrderByCreationDateDesc(symbol.toUpperCase());
-            System.out.println("live market "+liveMarket);
-            newMap.put("highPrice", liveMarkets.get(0).getHigh());
-            newMap.put("lowPrice", liveMarkets.get(0).getLow());
-            newMap.put("openPrice", liveMarkets.get(0).getOpen());
-            newMap.put("previousClosePrice", liveMarkets.get(0).getPreviousclosing());
-            newMap.put("pointsChange", liveMarkets.get(0).getPointchange());
-        }
+//        Optional<LiveMarket> liveMarket = null;
+//        if(getMarketStatus().get("isOpen").equals("OPEN")) {
+//            LiveMarketDto liveMarketDto = scrapeLiveMarket();
+//             liveMarket = liveMarketDto.getResults().stream().filter(l -> l.getSymbol().equalsIgnoreCase(symbol.toUpperCase())).findFirst();
+//            newMap.put("highPrice", liveMarket.get().getHigh());
+//            newMap.put("lowPrice", liveMarket.get().getLow());
+//            newMap.put("openPrice", liveMarket.get().getOpen());
+//            newMap.put("previousClosePrice", liveMarket.get().getPreviousclosing());
+//            newMap.put("pointsChange", liveMarket.get().getPointchange());
+//        }else{
+//            List<LiveMarket> liveMarkets = liveMarketRepository.findBySymbolOrderByCreationDateDesc(symbol.toUpperCase());
+//            System.out.println("live market "+liveMarket);
+//            newMap.put("highPrice", liveMarkets.get(0).getHigh());
+//            newMap.put("lowPrice", liveMarkets.get(0).getLow());
+//            newMap.put("openPrice", liveMarkets.get(0).getOpen());
+//            newMap.put("previousClosePrice", liveMarkets.get(0).getPreviousclosing());
+//            newMap.put("pointsChange", liveMarkets.get(0).getPointchange());
+//        }
 
             String companyNo = companyAndSymbolRepository.findBySymbol(newMap.get("symbol")).getNumber();
             newMap.put("companyNo", companyNo);
