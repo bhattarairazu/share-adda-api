@@ -31,7 +31,7 @@ public class PortfolioSummaryIImpl implements PortfolioSummaryI {
     @Autowired
     private ScrappingService scrappingService;
 
-    private static double ltp = 1999;
+    //private static double ltp = 1999;
 
     @Override
     public PortfolioSummary save(PortfolioSummary portfolioSummary) {
@@ -40,7 +40,8 @@ public class PortfolioSummaryIImpl implements PortfolioSummaryI {
 
     private String getLtp(String symbol) throws IOException {
         CompanyDetails companyDetails = scrappingService.getCompanyDetails(symbol);
-        return companyDetails.getMarketPrice();
+        String marketprice = companyDetails.getMarketPrice().replace(",","");
+        return marketprice;
 
     }
     @Override
@@ -85,7 +86,7 @@ public class PortfolioSummaryIImpl implements PortfolioSummaryI {
         PortfolioSummary portfolioSummaryUser = portfoliosummaryRepository.findById(portfolioAddRequestDto.getPortfolioSummaryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio Summary with id " + portfolioAddRequestDto.getPortfolioSummaryId() + " Not found.Create Portfolio At First"));
         //List<String> listOfPortfolioSymbol = portfolioSummaryUser.getAllPortfolio().stream().map(Portfolio::getStockSymbol).collect(Collectors.toList());
-        double ltp = 0.00;
+        Double ltp = 0.00;
         try{
              ltp = Double.parseDouble(getLtp(portfolioAddRequestDto.getStockSymbol()));
         }catch (IOException ex){
