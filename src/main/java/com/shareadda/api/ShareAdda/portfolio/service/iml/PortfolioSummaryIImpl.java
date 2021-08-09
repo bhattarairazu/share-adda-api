@@ -1,6 +1,8 @@
 package com.shareadda.api.ShareAdda.portfolio.service.iml;
 
+import com.shareadda.api.ShareAdda.LiveMarket.domain.CompanyDetails;
 import com.shareadda.api.ShareAdda.LiveMarket.repository.CompanyAndSymbol;
+import com.shareadda.api.ShareAdda.LiveMarket.service.ScrappingService;
 import com.shareadda.api.ShareAdda.exception.BackendException;
 import com.shareadda.api.ShareAdda.exception.ResourceNotFoundException;
 import com.shareadda.api.ShareAdda.portfolio.domain.Portfolio;
@@ -11,6 +13,7 @@ import com.shareadda.api.ShareAdda.portfolio.service.PortfolioSummaryI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +28,9 @@ public class PortfolioSummaryIImpl implements PortfolioSummaryI {
     @Autowired
     private CompanyAndSymbol companyAndSymbolRepository;
 
+    @Autowired
+    private ScrappingService scrappingService;
+
     private static double ltp = 1999;
 
     @Override
@@ -32,7 +38,11 @@ public class PortfolioSummaryIImpl implements PortfolioSummaryI {
         return portfoliosummaryRepository.save(portfolioSummary);
     }
 
+    private String getLtp(String symbol) throws IOException {
+        CompanyDetails companyDetails = scrappingService.getCompanyDetails(symbol);
+        return companyDetails.getMarketPrice();
 
+    }
     @Override
     public List<PortfolioSummary> findByUserId(String userid) {
         List<PortfolioSummary> portfolioSummary = portfoliosummaryRepository.findByUserId(userid);
@@ -75,6 +85,12 @@ public class PortfolioSummaryIImpl implements PortfolioSummaryI {
         PortfolioSummary portfolioSummaryUser = portfoliosummaryRepository.findById(portfolioAddRequestDto.getPortfolioSummaryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio Summary with id " + portfolioAddRequestDto.getPortfolioSummaryId() + " Not found.Create Portfolio At First"));
         //List<String> listOfPortfolioSymbol = portfolioSummaryUser.getAllPortfolio().stream().map(Portfolio::getStockSymbol).collect(Collectors.toList());
+        double ltp = 0.00;
+        try{
+             ltp = Double.parseDouble(getLtp(portfolioAddRequestDto.getStockSymbol()));
+        }catch (IOException ex){
+
+        }
         Portfolio portfolio = null;
         int currentIndex = -1;
         if(portfolioSummaryUser.getAllPortfolio().size()>0) {
